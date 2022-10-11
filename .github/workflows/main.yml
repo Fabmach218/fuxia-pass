@@ -1,0 +1,42 @@
+name: Java CI with Maven Deploy to heroku Web Integrado
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build_webapp:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: 17
+
+    - name: Build with Maven WebApp
+      run: mvn -B package --file ./spring-app-core/pom.xml -DskipTests
+
+    - name: Build, Push and Release a Docker container to Heroku WebApp
+      uses: gonuit/heroku-docker-deploy@v1.3.3 
+      with:
+
+          email: ${{ secrets.HEROKU_EMAIL }}
+
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+
+          dockerfile_directory: ./pasarela/
+
+          dockerfile_name: DockerFile
+
+          docker_options: "--no-cache"
+
+          process_type: web
