@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'tarjeta')}">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validar DNI</title>
+</head>
+<body>
+    
+    <p th:text="${mensaje}"></p>
+
+    <form class="form" th:action="@{/tarjeta/validarDNI}" method="post">
+
+        <div class="form-group row">
+            <label>DNI</label>
+            <input type="text" class="form-control" name="dni" required>
+        </div>
+
+        <div class="form-group row">
+            <button class="btn btn-primary">Validar</button>
+        </div>
+
+    </form>
+
+</body>
+</html>

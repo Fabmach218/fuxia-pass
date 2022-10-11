@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'index')}">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+</head>
+<body>
+    <h1>¡¡¡Bienvenido a FuxiaPass!!!</h1>
+
+    <p th:text="${mensaje}"></p>
+
+    <a th:href="@{tarjeta/validarDNI}">Crear tarjeta</a>
+    <a th:href="@{tarjeta/pagar}">Pasarela de pagos</a>
+    <a th:href="@{tarjeta/abonar}">Abonar dinero</a>
+</body>
+</html>

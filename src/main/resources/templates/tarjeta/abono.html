@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'tarjeta')}">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abono</title>
+</head>
+<body>
+    
+    <p th:text="${mensaje}"></p>
+
+    <form class="form" th:object="${form}" th:action="@{/tarjeta/abonar}" method="post">
+
+        <div class="form-group row">
+            <label>Número de tarjeta</label>
+            <input type="text" class="form-control" th:field="*{nroTarjeta}" data-inputmask="'mask': '9999 9999 9999 9999'" minlength="19" maxlength="19" required>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-4">
+                <label>Mes vencimiento</label>
+                <select class="form-control" th:field="*{dueMonth}" required>
+                    <option value="">- Seleccione -</option>
+                    <option value="01">Enero</option>
+                    <option value="02">Febrero</option>
+                    <option value="03">Marzo</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Mayo</option>
+                    <option value="06">Junio</option>
+                    <option value="07">Julio</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Setiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label>Año vencimiento</label>
+                <select class="form-control" th:field="*{dueYear}" required>
+                    <option value="">- Seleccione -</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label>CVV</label>
+                <input type="password" class="form-control" th:field="*{cvv}" minlength="3" maxlength="3" required>
+            </div>
+        
+        </div>
+        
+        <div class="form-group row">
+            <label>Nombre como figura en la tarjeta</label>
+            <input type="text" class="form-control" th:field="*{nombre}" minlength="10" required>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-md-6">
+                <label>Moneda</label>
+                <select class="form-control" th:field="*{moneda}" required>
+                    <option value="">- Seleccione -</option>
+                    <option value="PEN">Soles (S/)</option>
+                    <option value="USD">Dólares ($)</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label>Monto</label>
+                <input type="number" class="form-control" th:field="*{monto}" step="0.01" required>
+            </div>
+
+        </div>
+
+        <div class="form-group row">
+            <button class="btn btn-primary">Abonar</button>
+        </div>
+    </form>
+
+    <script th:src="@{/assets/dist/js/jquery-3.6.1.min.js}"></script>
+    <script th:src="@{/assets/dist/js/jquery.inputmask.min.js}"></script>
+
+    <script>
+        $(":input").inputmask();
+    </script>
+
+</body>
+</html>

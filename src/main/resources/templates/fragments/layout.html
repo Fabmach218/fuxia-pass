@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html th:fragment="layout (template, menu)">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuxiaPass</title>
+
+  <link rel="icon" sizes="16x16" href="/icons/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link th:href="@{/assets/dist/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+          <a  th:href="@{/}" style="color: purple; font-size: 30px" class="d-flex align-items-center col-md-3 mb-2 mb-md-0 text-decoration-none">
+             Fuxia<strong>Pass</strong>
+          </a>
+    
+          <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            <li><a th:href="@{/}" class="nav-link px-2" style="color: purple;"><strong>Inicio</strong></a></li>
+            <li><a th:href="@{/dashboards/}" class="nav-link px-2 link-dark">Dashboards</a></li>
+            <li><a th:href="@{/tarjeta/validarDNI}" class="nav-link px-2 link-dark">Crear una tarjeta</a></li>
+            <li><a th:href="@{/tarjeta/pagar}" class="nav-link px-2 link-dark">Pagar</a></li>
+            <li><a th:href="@{/tarjeta/abonar}" class="nav-link px-2 link-dark">Abonar</a></li>
+          </ul>
+        </header>
+      
+      </div>
+
+      <div class="container">  
+        <main role="main" class="pb-3">
+          <th:block th:include="${template}" />
+        </main>
+      </div>
+
+    <div class="container">
+      <footer class="py-3 my-4">
+        <ul class="nav justify-content-center border-bottom pb-3 mb-3">
+          <li><a th:href="@{/}" class="nav-link px-2" style="color: purple;"><strong>Inicio</strong></a></li>
+        </ul>
+        <p class="text-center" style="color: purple; font-size: 20px;">&copy; Fuxia<strong>Pass</strong> 2022</p>
+      </footer>
+    </div>
+   
+      <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
+      <script th:src="@{/assets/dist/js/jquery-3.6.1.min.js}"></script>
+      <script th:src="@{/assets/dist/js/jquery.inputmask.min.js}"></script>
+      
+</body>
+</html>
