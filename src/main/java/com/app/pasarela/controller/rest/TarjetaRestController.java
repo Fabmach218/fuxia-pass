@@ -95,15 +95,14 @@ public class TarjetaRestController {
 
                 status = "reload";
                 String moneda = tarjeta.getMoneda();
+                form.setMoneda(moneda);
 
-                if(moneda.equals("USD")){
-                    form.setMoneda("PEN");
-                    Double monto = form.getMonto() * form.getTcCompra();
+                if(moneda.equals("USD")){ //La moneda de la tarjeta es dólares, por lo que hay que convertir el monto del formulario a dólares.
+                    Double monto = form.getMonto() / form.getTcVenta();
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
-                }else{
-                    form.setMoneda("USD");
-                    Double monto = form.getMonto() / form.getTcVenta();
+                }else{ //Y viceversa
+                    Double monto = form.getMonto() * form.getTcCompra();
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
                 }
@@ -155,15 +154,14 @@ public class TarjetaRestController {
 
                 status = "reload";
                 String moneda = tarjeta.getMoneda();
+                form.setMoneda(moneda);
 
-                if(moneda.equals("USD")){
-                    form.setMoneda("PEN");
-                    Double monto = form.getMonto() * form.getTcCompra();
+                if(moneda.equals("USD")){ //La moneda de la tarjeta es dólares, por lo que hay que convertir el monto del formulario a dólares.
+                    Double monto = form.getMonto() / form.getTcVenta();
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
-                }else{
-                    form.setMoneda("USD");
-                    Double monto = form.getMonto() / form.getTcVenta();
+                }else{ //Y viceversa
+                    Double monto = form.getMonto() * form.getTcCompra();
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
                 }
