@@ -6,9 +6,9 @@ public class Constants {
     public static final Double tcCompra = 3.97;
     public static final Double tcVenta = 4.01;
 
-    public static final String URLFuxiaPass = "";
-    public static final String APITarjeta = "/api/tarjeta";
-    public static final String pagar = "/pagar";
-    public static final String abonar = "/abonar";
+    public static final String URLFuxiaPass = "https://fuxia-pass.herokuapp.com/";
+    public static final String APITarjeta = "api/tarjeta/";
+    public static final String pagar = "pagar";
+    public static final String abonar = "abonar";
 
 }
