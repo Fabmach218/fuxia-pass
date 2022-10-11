@@ -98,11 +98,11 @@ public class TarjetaRestController {
                 form.setMoneda(moneda);
 
                 if(moneda.equals("USD")){ //La moneda de la tarjeta es dólares, por lo que hay que convertir el monto del formulario a dólares.
-                    Double monto = form.getMonto() / form.getTcVenta();
+                    Double monto = form.getMonto() / form.getTcCompra(); //El banco está comprando dólares, por lo que se aplica el TC de compra.
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
                 }else{ //Y viceversa
-                    Double monto = form.getMonto() * form.getTcCompra();
+                    Double monto = form.getMonto() * form.getTcVenta(); //El banco está vendiendo dólares, por lo que se aplica el TC de venta.
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
                 }
@@ -157,11 +157,11 @@ public class TarjetaRestController {
                 form.setMoneda(moneda);
 
                 if(moneda.equals("USD")){ //La moneda de la tarjeta es dólares, por lo que hay que convertir el monto del formulario a dólares.
-                    Double monto = form.getMonto() / form.getTcVenta();
+                    Double monto = form.getMonto() / form.getTcVenta(); //El banco está vendiendo dólares, por lo que se aplica el TC de venta.
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
                 }else{ //Y viceversa
-                    Double monto = form.getMonto() * form.getTcCompra();
+                    Double monto = form.getMonto() * form.getTcCompra(); //El banco está comprando dólares, por lo que se aplica el TC de compra.
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
                 }
