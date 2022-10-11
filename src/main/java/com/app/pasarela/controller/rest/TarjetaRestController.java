@@ -95,7 +95,20 @@ public class TarjetaRestController {
 
                 status = "reload";
                 String moneda = tarjeta.getMoneda();
-                mensaje = "Se recalculó el monto total en " + moneda + "."; //El core va a aplicar el tipo de cambio y modificar el objeto, de forma que no vuelva a reload.
+
+                if(moneda.equals("USD")){
+                    form.setMoneda("PEN");
+                    Double monto = form.getMonto() * form.getTcCompra();
+                    monto = Math.rint(monto * 100) / 100;
+                    form.setMonto(monto);
+                }else{
+                    form.setMoneda("USD");
+                    Double monto = form.getMonto() / form.getTcVenta();
+                    monto = Math.rint(monto * 100) / 100;
+                    form.setMonto(monto);
+                }
+
+                mensaje = "Se recalculó el monto total en " + moneda + ".";
 
             }
 
@@ -142,7 +155,20 @@ public class TarjetaRestController {
 
                 status = "reload";
                 String moneda = tarjeta.getMoneda();
-                mensaje = "Se recalculó el monto total en " + moneda + "."; //El core va a aplicar el tipo de cambio y modificar el objeto, de forma que no vuelva a reload.
+
+                if(moneda.equals("USD")){
+                    form.setMoneda("PEN");
+                    Double monto = form.getMonto() * form.getTcCompra();
+                    monto = Math.rint(monto * 100) / 100;
+                    form.setMonto(monto);
+                }else{
+                    form.setMoneda("USD");
+                    Double monto = form.getMonto() / form.getTcVenta();
+                    monto = Math.rint(monto * 100) / 100;
+                    form.setMonto(monto);
+                }
+
+                mensaje = "Se recalculó el monto total en " + moneda + ".";
 
             }
 

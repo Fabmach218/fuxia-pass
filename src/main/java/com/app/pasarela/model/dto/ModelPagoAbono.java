@@ -15,5 +15,7 @@ public class ModelPagoAbono {
     private String nombre;
     private String moneda;
     private Double monto;
+    private Double tcCompra;
+    private Double tcVenta;
 
 }

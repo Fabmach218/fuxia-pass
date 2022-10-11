@@ -84,6 +84,9 @@ xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~
                 <input type="number" class="form-control" th:field="*{monto}" step="0.01" required>
             </div>
 
+            <input type="number" th:field="*{tcCompra}" hidden>
+            <input type="number" th:field="*{tcVenta}" hidden>
+
         </div>
 
         <div class="form-group row">

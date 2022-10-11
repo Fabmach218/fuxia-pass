@@ -21,7 +21,6 @@ import com.app.pasarela.integration.reniec.UserReniec;
 import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.model.dto.ModelRespuestaPagoAbono;
-import com.app.pasarela.model.dto.ModelRespuestaTarjeta;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
 import com.app.pasarela.repository.TarjetaRepository;
 import com.app.pasarela.util.Constants;
@@ -154,7 +153,13 @@ public class TarjetaController {
 
     @RequestMapping(value = "/pagar", method = RequestMethod.GET)
     public String pagar(Model model){
-        model.addAttribute("form", new ModelPagoAbono());
+
+        ModelPagoAbono form = new ModelPagoAbono();
+
+        form.setTcCompra(Constants.tcCompra);
+        form.setTcVenta(Constants.tcVenta);
+
+        model.addAttribute("form", form);
         return "tarjeta/pago";
     }
 
@@ -173,18 +178,7 @@ public class TarjetaController {
             if(respuesta.getStatus().equals("reload")){
                 
                 model.addAttribute("mensajeRecarga", respuesta.getMensaje());
-
-                ModelPagoAbono form2 = respuesta.getTarjeta();
-                
-                if(form2.getMoneda().equals("USD")){
-                    form2.setMoneda("PEN");
-                    form2.setMonto(Math.rint(form2.getMonto() * Constants.tcCompra * 100)/100); //TC Compra
-                }else{
-                    form2.setMoneda("USD");
-                    form2.setMonto(Math.rint(form2.getMonto() / Constants.tcVenta * 100)/100); //TC Venta
-                }
-
-                model.addAttribute("form", form2);
+                model.addAttribute("form", respuesta.getTarjeta());
                 return "tarjeta/pago";
             }
 
@@ -211,7 +205,13 @@ public class TarjetaController {
 
     @RequestMapping(value = "/abonar", method = RequestMethod.GET)
     public String abonar(Model model){
-        model.addAttribute("form", new ModelPagoAbono());
+
+        ModelPagoAbono form = new ModelPagoAbono();
+
+        form.setTcCompra(Constants.tcCompra);
+        form.setTcVenta(Constants.tcVenta);
+
+        model.addAttribute("form", form);
         return "tarjeta/abono";
     }
 
@@ -230,18 +230,7 @@ public class TarjetaController {
             if(respuesta.getStatus().equals("reload")){
                 
                 model.addAttribute("mensajeRecarga", respuesta.getMensaje());
-
-                ModelPagoAbono form2 = respuesta.getTarjeta();
-                
-                if(form2.getMoneda().equals("USD")){
-                    form2.setMoneda("PEN");
-                    form2.setMonto(Math.rint(form2.getMonto() * Constants.tcCompra * 100)/100); //TC Compra
-                }else{
-                    form2.setMoneda("USD");
-                    form2.setMonto(Math.rint(form2.getMonto() / Constants.tcVenta * 100)/100); //TC Venta
-                }
-
-                model.addAttribute("form", form2);
+                model.addAttribute("form", respuesta.getTarjeta());
                 return "tarjeta/abono";
             }
 
