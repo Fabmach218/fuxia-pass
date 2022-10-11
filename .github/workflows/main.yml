@@ -21,7 +21,7 @@ jobs:
         java-version: 17
 
     - name: Build with Maven WebApp
-      run: mvn -B package --file ./pasarela/pom.xml -DskipTests
+      run: mvn -B package --file ./pom.xml -DskipTests
 
     - name: Build, Push and Release a Docker container to Heroku WebApp
       uses: gonuit/heroku-docker-deploy@v1.3.3 
@@ -33,7 +33,7 @@ jobs:
 
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
 
-          dockerfile_directory: .
+          dockerfile_directory: ./
 
           dockerfile_name: DockerFile
 
