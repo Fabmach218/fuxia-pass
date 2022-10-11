@@ -15,8 +15,15 @@ xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~
     <form class="form" th:object="${form}" th:action="@{/tarjeta/pagar}" method="post">
 
         <div class="form-group row">
-            <label>Número de tarjeta</label>
-            <input type="text" class="form-control" th:field="*{nroTarjeta}" data-inputmask="'mask': '9999 9999 9999 9999'" minlength="19" maxlength="19" required>
+            <div class="col-md-11">
+                <label>Número de tarjeta</label>
+                <input type="text" class="form-control" th:field="*{nroTarjeta}" data-inputmask="'mask': '9999 9999 9999 9999'" minlength="19" maxlength="19" oninput="cambiarLogo(this.value);" required>
+            </div>
+            <div class="col-md-1">
+                <label>&nbsp;</label>
+                <br>
+                <img id="logoTipoTarjeta" src="/img/blank.png" alt="" width="64px" height="36px">
+            </div>
         </div>
 
         <div class="form-group row">
@@ -90,6 +97,19 @@ xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~
 
     <script>
         $(":input").inputmask();
+
+        function cambiarLogo(nroTarjeta){
+
+            if(nroTarjeta.substring(0,1) === '4'){
+                document.getElementById('logoTipoTarjeta').src = '/img/visa-logo.png';
+            }else if(nroTarjeta.substring(0,1) === '5'){
+                document.getElementById('logoTipoTarjeta').src = '/img/master-card-logo.png';
+            }else{
+                document.getElementById('logoTipoTarjeta').src = '/img/blank.png';
+            }
+
+        }
+
     </script>
 
 </body>
