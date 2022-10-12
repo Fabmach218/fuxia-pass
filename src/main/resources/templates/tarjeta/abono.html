@@ -9,7 +9,8 @@ xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~
 </head>
 <body>
     
-    <p th:text="${mensaje}"></p>
+    <p th:text="${mensajeRecarga}"></p>
+    <p th:text="${mensajeError}" class="text-danger"></p>
 
     <form class="form" th:object="${form}" th:action="@{/tarjeta/abonar}" method="post">
 
