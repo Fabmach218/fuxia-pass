@@ -38,11 +38,6 @@ public class TarjetaRestController {
     @Autowired
     private PagoRepository _dataPagos;
 
-    @GetMapping(value = "getTarjetasByDNI/{dni}", produces = "application/json")
-    public ResponseEntity<List<Tarjeta>> getTarjetasByDNI(@PathVariable String dni){
-        return new ResponseEntity<List<Tarjeta>>(_dataTarjetas.findByDni(dni), HttpStatus.OK);
-    }
-
     @PatchMapping(value = "editarTarjeta/{id}", produces = "application/json")
     public ResponseEntity<Tarjeta> editarTarjeta(@PathVariable int id, @RequestParam boolean active){
         

@@ -29,7 +29,6 @@ import com.app.pasarela.util.Constants;
 import com.app.pasarela.util.Methods;
 
 @Controller
-@Secured("ROLE_USER")
 @RequestMapping("/tarjeta")
 public class TarjetaController {
     
