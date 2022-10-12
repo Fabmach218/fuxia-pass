@@ -24,6 +24,7 @@ import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.model.dto.ModelRespuestaPagoAbono;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
 import com.app.pasarela.repository.TarjetaRepository;
+import com.app.pasarela.service.IUsuarioService;
 import com.app.pasarela.util.Constants;
 import com.app.pasarela.util.Methods;
 
@@ -34,6 +35,9 @@ public class TarjetaController {
     
     @Autowired
     private ReniecApi _reniecApi;
+
+    @Autowired
+    private IUsuarioService _dataUsuarios;
 
     @Autowired
     private RestTemplate _restTemplate;
@@ -56,24 +60,33 @@ public class TarjetaController {
         
         if(usuario != null){
             
-            ModelTarjetaCreate tarjeta = new ModelTarjetaCreate();
-            tarjeta.setDni(dni);
-            
-            String nombre = "";
+            if(_dataUsuarios.findByUsername(dni) != null){
 
-            if(usuario.getNombres().split(" ")[0].length() < 7){
-                nombre = usuario.getNombres().split(" ")[0];
+                ModelTarjetaCreate tarjeta = new ModelTarjetaCreate();
+                tarjeta.setDni(dni);
+                
+                String nombre = "";
+
+                if(usuario.getNombres().split(" ")[0].length() < 7){
+                    nombre = usuario.getNombres().split(" ")[0];
+                }else{
+                    nombre = usuario.getNombres().charAt(0) + ".";
+                }
+
+                nombre += " " + usuario.getApePat() + " " + usuario.getApeMat().charAt(0) + ".";
+                nombre.toUpperCase();
+                tarjeta.setNombre(nombre);
+
+                redirectAttributes.addFlashAttribute("tarjeta", tarjeta);
+                redirectAttributes.addFlashAttribute("mensaje", "DNI validado, puede proceder a crear la tarjeta");
+                return "redirect:/tarjeta/create";
+
             }else{
-                nombre = usuario.getNombres().charAt(0) + ".";
+
+                model.addAttribute("mensaje", "El usuario no existe, no se le puede registrar una tarjeta!!!");
+                return "tarjeta/formDNI";
+
             }
-
-            nombre += " " + usuario.getApePat() + " " + usuario.getApeMat().charAt(0) + ".";
-            nombre.toUpperCase();
-            tarjeta.setNombre(nombre);
-
-            redirectAttributes.addFlashAttribute("tarjeta", tarjeta);
-            redirectAttributes.addFlashAttribute("mensaje", "DNI validado, puede proceder a crear la tarjeta");
-            return "redirect:/tarjeta/create";
 
         }else{
 
@@ -138,7 +151,7 @@ public class TarjetaController {
             tarjeta.setActive(false);
 
             tarjeta.setNombre(tarjetaCreate.getNombre());
-            tarjeta.setDni(tarjetaCreate.getDni());
+            tarjeta.setUsuario(_dataUsuarios.findByUsername(tarjetaCreate.getDni()));
             tarjeta.setMoneda(tarjetaCreate.getMoneda());
 
             tarjeta.setSaldo(0.0);            
