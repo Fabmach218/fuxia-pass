@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,6 +28,7 @@ import com.app.pasarela.util.Constants;
 import com.app.pasarela.util.Methods;
 
 @Controller
+@Secured("ROLE_USER")
 @RequestMapping("/tarjeta")
 public class TarjetaController {
     
@@ -39,13 +41,15 @@ public class TarjetaController {
     @Autowired
     private TarjetaRepository _dataTarjetas;
 
+    @Secured("ROLE_ADMIN")
     @GetMapping("/validarDNI")
     public String validarDNI(Model model){
         return "tarjeta/formDNI";
     }
 
+    @Secured("ROLE_ADMIN")
     @PostMapping("/validarDNI")
-    public String create(Model model, @Valid String dni, RedirectAttributes redirectAttributes){
+    public String validarDNI(Model model, @Valid String dni, RedirectAttributes redirectAttributes){
         
         UserReniec usuario = null; 
         usuario = _reniecApi.findExitsUserByDni(dni);
@@ -79,11 +83,13 @@ public class TarjetaController {
 
     }
 
+    @Secured("ROLE_ADMIN")
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model){
         return "tarjeta/create";
     }
 
+    @Secured("ROLE_ADMIN")
     @RequestMapping(value = "/submitCreate", method = RequestMethod.POST)
     public String submitCreate(Model model, @Valid ModelTarjetaCreate tarjetaCreate, BindingResult result, RedirectAttributes redirectAttributes){
 

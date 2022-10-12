@@ -19,11 +19,33 @@
     
           <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
             <li><a th:href="@{/}" class="nav-link px-2" style="color: purple;"><strong>Inicio</strong></a></li>
-            <li><a th:href="@{/dashboards/}" class="nav-link px-2 link-dark">Dashboards</a></li>
-            <li><a th:href="@{/tarjeta/validarDNI}" class="nav-link px-2 link-dark">Crear una tarjeta</a></li>
-            <li><a th:href="@{/tarjeta/pagar}" class="nav-link px-2 link-dark">Pagar</a></li>
-            <li><a th:href="@{/tarjeta/abonar}" class="nav-link px-2 link-dark">Abonar</a></li>
+            
+            <th:block sec:authorize="isAuthenticated()">
+              
+              <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+                <li><a th:href="@{/dashboards/}" class="nav-link px-2 link-dark">Dashboards</a></li>
+                <li><a th:href="@{/tarjeta/validarDNI}" class="nav-link px-2 link-dark">Crear una tarjeta</a></li>
+              </th:block>
+            
+              <li><a th:href="@{/tarjeta/pagar}" class="nav-link px-2 link-dark">Pagar</a></li>
+              <li><a th:href="@{/tarjeta/abonar}" class="nav-link px-2 link-dark">Abonar</a></li>
+
+              <th:block sec:authorize="hasRole('ROLE_USER')">
+                <li><a th:href="@{/tarjeta/listar}" class="nav-link px-2 link-dark">Mis tarjetas</a></li>
+              </th:block>
+
+            </th:block>
           </ul>
+
+          <div class="col-md-3 text-end">
+            <a sec:authorize="!isAuthenticated()" class="btn me-2" style="border-color: purple;" th:href="@{/usuario/login}">Iniciar Sesion</a>
+            <a sec:authorize="!isAuthenticated()" class="btn" style="background-color: purple; color: white;" th:href="@{/usuario/validarDNI}">Registrarse</a>
+            <a sec:authorize="isAuthenticated()" sec:authentication="name" class="btn mb-3" style="border-color: purple;" href="#"></a>
+            <form sec:authorize="isAuthenticated()" th:action="@{/usuario/logout}" method="post">
+                <button type="submit" class="btn" style="background-color: purple; color: white;">Cerrar sesion</button>
+            </form>
+          </div>
+
         </header>
       
       </div>
@@ -47,6 +69,7 @@
       <script th:src="@{/assets/dist/js/bootstrap.bundle.min.js}"></script>
       <script th:src="@{/assets/dist/js/jquery-3.6.1.min.js}"></script>
       <script th:src="@{/assets/dist/js/jquery.inputmask.min.js}"></script>
+      <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       
 </body>
 </html>

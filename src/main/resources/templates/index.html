@@ -12,8 +12,19 @@ xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~
 
     <p th:text="${mensaje}"></p>
 
-    <a th:href="@{tarjeta/validarDNI}">Crear tarjeta</a>
-    <a th:href="@{tarjeta/pagar}">Pasarela de pagos</a>
-    <a th:href="@{tarjeta/abonar}">Abonar dinero</a>
+    <th:block sec:authorize="isAuthenticated()">
+        
+        <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+            <a th:href="@{/tarjeta/validarDNI}">Crear tarjeta</a>
+        </th:block>
+
+        <a th:href="@{/tarjeta/pagar}">Pasarela de pagos</a>
+        <a th:href="@{/tarjeta/abonar}">Abonar dinero</a>
+    </th:block>
+
+    <th:block sec:authorize="!isAuthenticated()">
+        <a th:href="@{/usuario/login}">Debe iniciar sesión para poder interactuar con la aplicación</a>
+    </th:block>
+
 </body>
 </html>

@@ -22,33 +22,34 @@ public class Tarjeta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(columnDefinition = "char(19)", unique = true)
+    @Column(columnDefinition = "char(19)", unique = true, updatable = false)
     @NotNull
     private String nroTarjeta;
 
-    @Column(columnDefinition = "char(7)")
+    @Column(columnDefinition = "char(7)", updatable = false)
     @NotNull
     private String dueDate;
 
-    @Column(columnDefinition = "char(3)")
+    @Column(columnDefinition = "char(3)", updatable = false)
     @NotNull
     private String cvv;
 
+    @Column(updatable = false)
     @NotNull
     private String nombre;
 
-    @Column(columnDefinition = "char(1)")
+    @Column(columnDefinition = "char(1)", updatable = false)
     @NotNull
     private String tipo;
 
     @NotNull
     private boolean active;
 
-    @Column(columnDefinition = "char(8)")
+    @Column(columnDefinition = "char(8)", updatable = false)
     @NotNull
     private String dni;
 
-    @Column(columnDefinition = "char(3)")
+    @Column(columnDefinition = "char(3)", updatable = false)
     @NotNull
     private String moneda;
 

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" 
+    th:replace="~{fragments/layout :: layout (~{::body},'usuario')}">
+
+<body>
+ 
+    <div class="container">
+
+        <div class="row">
+          <div class="col-sm-10 mt-5">
+            <div class="form-group row">
+              <h1>Cliente</h1>
+            </div>
+            <form class="form-validate" th:object="${usuario}" th:action="@{/usuario/create}" method="post">
+              <div class="form-group row">
+                <div class="col-sm-4">
+                  <label for="nombres">Nombres</label>
+                </div>
+                <div class="col-sm-4">
+                  <input type="text" class="form-control" th:field="*{nombres}" />
+                  <small class="form-text text-danger" th:if="${#fields.hasErrors('nombres')}" th:errors="*{nombres}"></small>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-sm-4">
+                  <label for="apellidos">Apellidos</label>
+                </div>
+                <div class="col-sm-4">
+                  <input type="text" class="form-control" th:field="*{apellidos}" />
+                  <small class="form-text text-danger" th:if="${#fields.hasErrors('apellidos')}" th:errors="*{apellidos}"></small>
+                </div>
+              </div>              
+              <div class="form-group row">
+                <div class="col-sm-4">
+                  <label for="email">Email</label>
+                </div>
+                <div class="col-sm-4">
+                  <input type="text" data-inputmask="'alias': 'email'"
+                  autocomplete="off" class="form-control" th:field="*{email}" />
+                  <small class="form-text text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-sm-4">
+                  <label for="username">DNI</label>
+                </div>
+                <div class="col-sm-4">
+                  <input type="text" class="form-control" th:field="*{username}" readonly/>
+                  <small class="form-text text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></small>
+                </div>
+              </div>
+              <div class="form-group row">
+                <div class="col-sm-4">
+                  <label for="password">Password</label>
+                </div>
+                <div class="col-sm-4">
+                  <input type="password" class="form-control" th:field="*{password}" />
+                  <small class="form-text text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
+                </div>
+              </div>
+              <input type="text" th:field="*{tipoUsuario}" hidden>              
+              <div class="form-group row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4">
+                  <button th:with="text='Registrar'" class="btn btn-primary" type="submit" th:text="${text}"/>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+  
+      <script>
+        $(":input").inputmask();
+      </script>
+</body>
+
+</html>

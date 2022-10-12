@@ -105,7 +105,7 @@ public class TarjetaRestController {
                     Double monto = form.getMonto() * form.getTcVenta(); //El banco está vendiendo dólares, por lo que se aplica el TC de venta.
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
-                }
+                } //Siempre el usuario paga un poco más al banco, este nunca pierde.
 
                 mensaje = "Se recalculó el monto total en " + moneda + ".";
 
@@ -164,7 +164,7 @@ public class TarjetaRestController {
                     Double monto = form.getMonto() * form.getTcCompra(); //El banco está comprando dólares, por lo que se aplica el TC de compra.
                     monto = Math.rint(monto * 100) / 100;
                     form.setMonto(monto);
-                }
+                } //Siempre el banco da un poco menos al usuario, nunca pierde.
 
                 mensaje = "Se recalculó el monto total en " + moneda + ".";
 
