@@ -102,7 +102,7 @@ public class TarjetaRestController {
                     form.setMonto(monto);
                 } //Siempre el usuario paga un poco más al banco, este nunca pierde.
 
-                mensaje = "Se recalculó el monto total en " + moneda + ".";
+                mensaje = "Se recalculó el monto total en " + moneda + ". Vuelva a hacer clic para procesar el pago.";
 
             }
 
@@ -161,7 +161,7 @@ public class TarjetaRestController {
                     form.setMonto(monto);
                 } //Siempre el banco da un poco menos al usuario, nunca pierde.
 
-                mensaje = "Se recalculó el monto total en " + moneda + ".";
+                mensaje = "Se recalculó el monto total en " + moneda + ". Vuelva a hacer clic para procesar el abono.";
 
             }
 
