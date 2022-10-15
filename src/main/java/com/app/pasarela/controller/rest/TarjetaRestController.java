@@ -105,7 +105,7 @@ public class TarjetaRestController {
         }else{
 
             status = "error";
-            mensaje = "Los datos son incorrectos.";
+            mensaje = "No se encuentra la tarjeta, verifique que los datos estén correctos.";
 
         }
 
@@ -166,7 +166,7 @@ public class TarjetaRestController {
         }else{
 
             status = "error";
-            mensaje = "Los datos son incorrectos.";
+            mensaje = "No se encuentra la tarjeta, verifique que los datos estén correctos.";
 
         }
 
