@@ -73,7 +73,7 @@ public class UsuarioController {
         usuario.setUsername("Admin123");
         usuario.setTipoUsuario("A");
         model.addAttribute("usuario", usuario);
-         */ //Descomentar para registrar un administrador 
+        */ //Descomentar para registrar un administrador 
         return "usuario/create";
     } 
     

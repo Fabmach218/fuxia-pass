@@ -26,21 +26,9 @@ public class Tarjeta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(columnDefinition = "char(19)", unique = true, updatable = false)
-    @NotNull
-    private String nroTarjeta;
-
-    @Column(columnDefinition = "char(7)", updatable = false)
-    @NotNull
-    private String dueDate;
-
-    @Column(columnDefinition = "char(3)", updatable = false)
-    @NotNull
-    private String cvv;
-
     @Column(updatable = false)
     @NotNull
-    private String nombre;
+    private byte[] credenciales;
 
     @Column(columnDefinition = "char(1)", updatable = false)
     @NotNull

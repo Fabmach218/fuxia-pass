@@ -2,6 +2,7 @@ package com.app.pasarela.controller;
 
 import javax.validation.Valid;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -123,7 +124,6 @@ public class TarjetaController {
             }
 
             nroTarjetaFormateado = nroTarjetaFormateado.trim(); //Quitamos el espacio al final
-            tarjeta.setNroTarjeta(nroTarjetaFormateado); //Guardamos el número de tarjeta con los espacios, para que se pueda usar con la máscara y se vea estético.
             
             if(nroTarjetaFormateado.charAt(0) == '4'){ //Si empieza con 4 es VISA, con 5 es MasterCard
                 tarjeta.setTipo("V");
@@ -137,19 +137,16 @@ public class TarjetaController {
                 dueDate = "0" + dueDate;
             }
 
-            tarjeta.setDueDate(dueDate);
-
             String cvv = Methods.generarAleatorio(10, 999) + "";
             
             while(cvv.length() < 3){
                 cvv = "0" + cvv;
             }
 
-            tarjeta.setCvv(cvv);
-
+            String credenciales = nroTarjetaFormateado + "," + dueDate + "," + cvv + "," + tarjetaCreate.getNombre().toUpperCase();
+            
+            tarjeta.setCredenciales(Base64.encodeBase64(credenciales.getBytes()));
             tarjeta.setActive(false);
-
-            tarjeta.setNombre(tarjetaCreate.getNombre());
             tarjeta.setUsuario(_dataUsuarios.findByUsername(tarjetaCreate.getDni()));
             tarjeta.setMoneda(tarjetaCreate.getMoneda());
 

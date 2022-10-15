@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +51,8 @@ public class TarjetaRestController {
     @PostMapping(value = "/pagar", produces = "application/json")
     public ResponseEntity<Map<String, Object>> pagar(@RequestBody ModelPagoAbono form){
 
-        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(form.getNroTarjeta(), form.getDueMonth() + "/" + form.getDueYear(), form.getCvv(), form.getNombre().toUpperCase());
+        String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
+        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(Base64.encodeBase64(credenciales.getBytes()));
 
         Map<String, Object> respuesta = new HashMap<>();
 
@@ -122,7 +124,8 @@ public class TarjetaRestController {
     @PostMapping(value = "/abonar", produces = "application/json")
     public ResponseEntity<Map<String, Object>> abonar(@RequestBody ModelPagoAbono form){
 
-        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(form.getNroTarjeta(), form.getDueMonth() + "/" + form.getDueYear(), form.getCvv(), form.getNombre().toUpperCase());
+        String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
+        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(Base64.encodeBase64(credenciales.getBytes()));
 
         Map<String, Object> respuesta = new HashMap<>();
 
