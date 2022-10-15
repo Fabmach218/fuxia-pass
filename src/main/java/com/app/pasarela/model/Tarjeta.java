@@ -28,7 +28,7 @@ public class Tarjeta {
 
     @Column(updatable = false)
     @NotNull
-    private byte[] credenciales;
+    private String credenciales;
 
     @Column(columnDefinition = "char(1)", updatable = false)
     @NotNull

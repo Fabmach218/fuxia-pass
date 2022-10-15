@@ -145,7 +145,7 @@ public class TarjetaController {
 
             String credenciales = nroTarjetaFormateado + "," + dueDate + "," + cvv + "," + tarjetaCreate.getNombre().toUpperCase();
             
-            tarjeta.setCredenciales(Base64.encodeBase64(credenciales.getBytes()));
+            tarjeta.setCredenciales(Methods.encodeBase64(credenciales));
             tarjeta.setActive(false);
             tarjeta.setUsuario(_dataUsuarios.findByUsername(tarjetaCreate.getDni()));
             tarjeta.setMoneda(tarjetaCreate.getMoneda());

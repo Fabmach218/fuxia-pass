@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +20,7 @@ import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.repository.PagoRepository;
 import com.app.pasarela.repository.TarjetaRepository;
+import com.app.pasarela.util.Methods;
 
 @RestController
 @RequestMapping(value = "api/tarjeta", produces = "application/json")
@@ -52,7 +52,8 @@ public class TarjetaRestController {
     public ResponseEntity<Map<String, Object>> pagar(@RequestBody ModelPagoAbono form){
 
         String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
-        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(Base64.encodeBase64(credenciales.getBytes()));
+        String credencialesEncode = Methods.encodeBase64(credenciales);
+        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(credencialesEncode);
 
         Map<String, Object> respuesta = new HashMap<>();
 
@@ -125,7 +126,8 @@ public class TarjetaRestController {
     public ResponseEntity<Map<String, Object>> abonar(@RequestBody ModelPagoAbono form){
 
         String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
-        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(Base64.encodeBase64(credenciales.getBytes()));
+        String credencialesEncode = Methods.encodeBase64(credenciales);
+        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(credencialesEncode);
 
         Map<String, Object> respuesta = new HashMap<>();
 
