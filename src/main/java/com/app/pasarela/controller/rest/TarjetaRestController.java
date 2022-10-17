@@ -47,53 +47,55 @@ public class TarjetaRestController {
         if(validarTarjeta(tarjeta)){
             System.out.println(_dataPagos.getFechaHoy());
             Double montoGastadoHoy = _dataPagos.getSumMontoTarjetaHoy(tarjeta.getId());
-
-            if(montoGastadoHoy + form.getMonto() <= tarjeta.getLimDiario()){
-                
-                if(form.getMoneda().equals(tarjeta.getMoneda())){
-                
-                    if(tarjeta.getSaldo() >= form.getMonto()){
     
+            if(form.getMoneda().equals(tarjeta.getMoneda())){
+            
+                if(tarjeta.getSaldo() >= form.getMonto()){
+
+                    if(montoGastadoHoy + form.getMonto() <= tarjeta.getLimDiario()){
+
                         Pago p = new Pago();
                         p.setTarjeta(tarjeta);
                         p.setMonto(form.getMonto());
                         p.setFechaHora(new Date());
                         _dataPagos.save(p);
-    
+
                         tarjeta.setSaldo(tarjeta.getSaldo() - form.getMonto());
                         _dataTarjetas.save(tarjeta);
                         status = "success";
                         mensaje = "Pago realizado con éxito!!!";
-    
+
                     }else{
                         status = "error";
-                        mensaje = "No tiene suficiente saldo para pagar.";
+                        mensaje = "Ha superado su límite diario, no se puede procesar el pago!!!";
                     }
-    
+
                 }else{
-    
-                    status = "reload";
-                    String moneda = tarjeta.getMoneda();
-                    form.setMoneda(moneda);
-    
-                    if(moneda.equals("USD")){ //La moneda de la tarjeta es dólares, por lo que hay que convertir el monto del formulario a dólares.
-                        Double monto = form.getMonto() / form.getTcCompra(); //El banco está comprando dólares, por lo que se aplica el TC de compra.
-                        monto = Math.rint(monto * 100) / 100;
-                        form.setMonto(monto);
-                    }else{ //Y viceversa
-                        Double monto = form.getMonto() * form.getTcVenta(); //El banco está vendiendo dólares, por lo que se aplica el TC de venta.
-                        monto = Math.rint(monto * 100) / 100;
-                        form.setMonto(monto);
-                    } //Siempre el usuario paga un poco más al banco, este nunca pierde.
-    
-                    mensaje = "Se recalculó el monto total en " + moneda + ". Vuelva a hacer clic para procesar el pago.";
-    
+                    status = "error";
+                    mensaje = "No tiene suficiente saldo para pagar.";
                 }
 
             }else{
-                status = "error";
-                mensaje = "Ha superado su límite diario, no se puede procesar el pago!!!";
+
+                status = "reload";
+                String moneda = tarjeta.getMoneda();
+                form.setMoneda(moneda);
+
+                if(moneda.equals("USD")){ //La moneda de la tarjeta es dólares, por lo que hay que convertir el monto del formulario a dólares.
+                    Double monto = form.getMonto() / form.getTcCompra(); //El banco está comprando dólares, por lo que se aplica el TC de compra.
+                    monto = Math.rint(monto * 100) / 100;
+                    form.setMonto(monto);
+                }else{ //Y viceversa
+                    Double monto = form.getMonto() * form.getTcVenta(); //El banco está vendiendo dólares, por lo que se aplica el TC de venta.
+                    monto = Math.rint(monto * 100) / 100;
+                    form.setMonto(monto);
+                } //Siempre el usuario paga un poco más al banco, este nunca pierde.
+
+                mensaje = "Se recalculó el monto total en " + moneda + ". Vuelva a hacer clic para procesar el pago.";
+
             }
+            
+            
 
         }else{
 
