@@ -47,7 +47,8 @@ public class TarjetaRestController {
         if(validarTarjeta(tarjeta)){
 
             Double montoGastadoHoy = _dataPagos.getSumMontoTarjetaHoy(tarjeta.getId());
-    
+            if(montoGastadoHoy == null){ montoGastadoHoy = 0.0;}
+
             if(form.getMoneda().equals(tarjeta.getMoneda())){
             
                 if(tarjeta.getSaldo() >= form.getMonto()){
