@@ -287,8 +287,8 @@ public class TarjetaController {
 
         Usuario u = (Usuario)session.getAttribute("usuario");
 
-        model.addAttribute("listaTarjetas", u.getTarjetas());
-        System.out.println(u.getTarjetas().size());
+        model.addAttribute("listaTarjetas", _dataTarjetas.findByUsuario(u.getId()));
+        System.out.println(_dataTarjetas.findByUsuario(u.getId()).size());
         return "tarjeta/lista";
 
     }

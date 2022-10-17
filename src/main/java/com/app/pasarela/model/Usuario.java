@@ -54,7 +54,4 @@ public class Usuario implements Serializable{
     @Size(max = 1)
     private String tipoUsuario = "C";
 
-    @OneToMany(mappedBy = "usuario")
-    private List<Tarjeta> tarjetas;
-
 }
