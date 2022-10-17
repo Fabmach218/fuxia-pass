@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.app.pasarela.model.Usuario;
 import com.app.pasarela.service.IUsuarioService;
+import com.app.pasarela.util.Methods;
 
 @Controller
 public class HomeController {

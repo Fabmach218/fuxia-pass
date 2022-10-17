@@ -32,22 +32,6 @@ public class TarjetaRestController {
     @Autowired
     private PagoRepository _dataPagos;
 
-    @PatchMapping(value = "editarTarjeta/{id}", produces = "application/json")
-    public ResponseEntity<Tarjeta> editarTarjeta(@PathVariable int id, @RequestParam boolean active){
-        
-        Tarjeta t = _dataTarjetas.findById(id);
-
-        if(t != null){
-            t.setActive(active);
-            _dataTarjetas.save(t);
-            _dataTarjetas.flush();
-            return new ResponseEntity<Tarjeta>(t, HttpStatus.OK);
-        }else{
-            return new ResponseEntity<Tarjeta>(HttpStatus.NOT_FOUND);
-        }
-
-    }
-
     @PostMapping(value = "/pagar", produces = "application/json")
     public ResponseEntity<Map<String, Object>> pagar(@RequestBody ModelPagoAbono form){
 
@@ -61,51 +45,60 @@ public class TarjetaRestController {
         String mensaje = "";
 
         if(validarTarjeta(tarjeta)){
+            System.out.println(_dataPagos.getFechaHoy());
+            Double montoGastadoHoy = _dataPagos.getSumMontoTarjetaHoy(tarjeta.getId());
 
-            if(form.getMoneda().equals(tarjeta.getMoneda())){
+            if(montoGastadoHoy + form.getMonto() <= tarjeta.getLimDiario()){
                 
-                if(tarjeta.getSaldo() >= form.getMonto()){
-
-                    Pago p = new Pago();
-                    p.setTarjeta(tarjeta);
-                    p.setMonto(form.getMonto());
-                    p.setFechaHora(new Date());
-                    _dataPagos.save(p);
-
-                    tarjeta.setSaldo(tarjeta.getSaldo() - form.getMonto());
-                    _dataTarjetas.save(tarjeta);
-                    status = "success";
-                    mensaje = "Pago realizado con éxito!!!";
-
+                if(form.getMoneda().equals(tarjeta.getMoneda())){
+                
+                    if(tarjeta.getSaldo() >= form.getMonto()){
+    
+                        Pago p = new Pago();
+                        p.setTarjeta(tarjeta);
+                        p.setMonto(form.getMonto());
+                        p.setFechaHora(new Date());
+                        _dataPagos.save(p);
+    
+                        tarjeta.setSaldo(tarjeta.getSaldo() - form.getMonto());
+                        _dataTarjetas.save(tarjeta);
+                        status = "success";
+                        mensaje = "Pago realizado con éxito!!!";
+    
+                    }else{
+                        status = "error";
+                        mensaje = "No tiene suficiente saldo para pagar.";
+                    }
+    
                 }else{
-                    status = "error";
-                    mensaje = "No tiene suficiente saldo para pagar.";
+    
+                    status = "reload";
+                    String moneda = tarjeta.getMoneda();
+                    form.setMoneda(moneda);
+    
+                    if(moneda.equals("USD")){ //La moneda de la tarjeta es dólares, por lo que hay que convertir el monto del formulario a dólares.
+                        Double monto = form.getMonto() / form.getTcCompra(); //El banco está comprando dólares, por lo que se aplica el TC de compra.
+                        monto = Math.rint(monto * 100) / 100;
+                        form.setMonto(monto);
+                    }else{ //Y viceversa
+                        Double monto = form.getMonto() * form.getTcVenta(); //El banco está vendiendo dólares, por lo que se aplica el TC de venta.
+                        monto = Math.rint(monto * 100) / 100;
+                        form.setMonto(monto);
+                    } //Siempre el usuario paga un poco más al banco, este nunca pierde.
+    
+                    mensaje = "Se recalculó el monto total en " + moneda + ". Vuelva a hacer clic para procesar el pago.";
+    
                 }
 
             }else{
-
-                status = "reload";
-                String moneda = tarjeta.getMoneda();
-                form.setMoneda(moneda);
-
-                if(moneda.equals("USD")){ //La moneda de la tarjeta es dólares, por lo que hay que convertir el monto del formulario a dólares.
-                    Double monto = form.getMonto() / form.getTcCompra(); //El banco está comprando dólares, por lo que se aplica el TC de compra.
-                    monto = Math.rint(monto * 100) / 100;
-                    form.setMonto(monto);
-                }else{ //Y viceversa
-                    Double monto = form.getMonto() * form.getTcVenta(); //El banco está vendiendo dólares, por lo que se aplica el TC de venta.
-                    monto = Math.rint(monto * 100) / 100;
-                    form.setMonto(monto);
-                } //Siempre el usuario paga un poco más al banco, este nunca pierde.
-
-                mensaje = "Se recalculó el monto total en " + moneda + ". Vuelva a hacer clic para procesar el pago.";
-
+                status = "error";
+                mensaje = "Ha superado su límite diario, no se puede procesar el pago!!!";
             }
 
         }else{
 
             status = "error";
-            mensaje = "No se encuentra la tarjeta, verifique que los datos estén correctos.";
+            mensaje = "No se encuentra la tarjeta, verifique que los datos estén correctos y que su tarjeta esté activa para compras por internet.";
 
         }
 
@@ -166,7 +159,7 @@ public class TarjetaRestController {
         }else{
 
             status = "error";
-            mensaje = "No se encuentra la tarjeta, verifique que los datos estén correctos.";
+            mensaje = "No se encuentra la tarjeta, verifique que los datos estén correctos y que su tarjeta esté activa para compras por internet.";
 
         }
 
@@ -185,7 +178,7 @@ public class TarjetaRestController {
 
     public boolean validarTarjeta(Tarjeta t){
 
-        if(t == null || t.isActive() == false){
+        if(t == null || t.isActive() == false || new Date().after(t.getDueDate())){
             return false;
         }else{
             return true;

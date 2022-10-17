@@ -1,5 +1,6 @@
 package com.app.pasarela.controller;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.app.pasarela.integration.reniec.ReniecApi;
 import com.app.pasarela.integration.reniec.UserReniec;
 import com.app.pasarela.model.Tarjeta;
+import com.app.pasarela.model.Usuario;
 import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.model.dto.ModelRespuestaPagoAbono;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
@@ -137,6 +139,8 @@ public class TarjetaController {
                 dueDate = "0" + dueDate;
             }
 
+            tarjeta.setDueDate(Methods.obtenerUltimoDiaMes(dueDate));
+
             String cvv = Methods.generarAleatorio(10, 999) + "";
             
             while(cvv.length() < 3){
@@ -150,8 +154,16 @@ public class TarjetaController {
             tarjeta.setUsuario(_dataUsuarios.findByUsername(tarjetaCreate.getDni()));
             tarjeta.setMoneda(tarjetaCreate.getMoneda());
 
-            tarjeta.setSaldo(0.0);            
+            Double maxDiario = 0.0;
 
+            if(tarjetaCreate.getMoneda().equals("PEN")){
+                maxDiario = Constants.maxPENDefault;
+            }else{
+                maxDiario = Constants.maxUSDDefault;
+            }
+
+            tarjeta.setSaldo(0.0);            
+            tarjeta.setLimDiario(maxDiario);
             _dataTarjetas.save(tarjeta);
 
             redirectAttributes.addFlashAttribute("mensaje", "Tarjeta creada con éxito!!!");
@@ -267,6 +279,17 @@ public class TarjetaController {
 
         return "redirect:/";
         
+    }
+
+    @Secured("ROLE_USER")
+    @RequestMapping(value = "/lista", method = RequestMethod.GET)
+    public String tarjetas(Model model, HttpSession session){
+
+        Usuario u = (Usuario)session.getAttribute("usuario");
+
+        model.addAttribute("listaTarjetas", u.getTarjetas());
+        System.out.println(u.getTarjetas().size());
+        return "tarjeta/lista";
 
     }
 

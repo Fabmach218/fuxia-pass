@@ -2,6 +2,8 @@ package com.app.pasarela.model;
 
 import lombok.*;
 
+import java.util.Date;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +32,10 @@ public class Tarjeta {
     @NotNull
     private String credenciales;
 
+    @Column(updatable = false)
+    @NotNull
+    private Date dueDate;
+
     @Column(columnDefinition = "char(1)", updatable = false)
     @NotNull
     private String tipo;
@@ -49,5 +55,9 @@ public class Tarjeta {
     @Column(columnDefinition = "numeric(18,2)")
     @NotNull
     private Double saldo;
+
+    @Column(columnDefinition = "numeric(18,2)")
+    @NotNull
+    private Double limDiario;
 
 }
