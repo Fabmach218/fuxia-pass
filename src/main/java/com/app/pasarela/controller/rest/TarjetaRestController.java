@@ -45,7 +45,7 @@ public class TarjetaRestController {
         String mensaje = "";
 
         if(validarTarjeta(tarjeta)){
-            System.out.println(_dataPagos.getFechaHoy());
+
             Double montoGastadoHoy = _dataPagos.getSumMontoTarjetaHoy(tarjeta.getId());
     
             if(form.getMoneda().equals(tarjeta.getMoneda())){
