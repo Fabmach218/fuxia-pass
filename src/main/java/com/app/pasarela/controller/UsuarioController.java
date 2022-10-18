@@ -68,8 +68,8 @@ public class UsuarioController {
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(Model model) {
         model.addAttribute("title", "Registro de usuario");
-        /*
-        Usuario usuario = new Usuario();
+        
+        /*Usuario usuario = new Usuario();
         usuario.setUsername("Admin123");
         usuario.setTipoUsuario("A");
         model.addAttribute("usuario", usuario);

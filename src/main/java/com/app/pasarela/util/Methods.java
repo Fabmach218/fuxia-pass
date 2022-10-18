@@ -35,4 +35,25 @@ public class Methods {
 
     }
 
+    public static String generarCadenaAleatoria(int longitud){
+        
+        String letrasUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String letrasLower = letrasUpper.toLowerCase();
+        String digitos = "0123456789";
+
+        String alfanumerico = letrasUpper + letrasLower + digitos;
+
+        String cadenaAleatoria = "";
+
+        for(int i = 0; i < longitud; i++){
+
+            int random = (int)(Math.random() * alfanumerico.length());
+            cadenaAleatoria += alfanumerico.charAt(random);
+
+        }
+
+        return cadenaAleatoria;
+
+    }
+
 }

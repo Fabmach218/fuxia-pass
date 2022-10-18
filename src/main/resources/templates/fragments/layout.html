@@ -29,6 +29,7 @@
             
               <li><a th:href="@{/tarjeta/pagar}" class="nav-link px-2 link-dark">Pagar</a></li>
               <li><a th:href="@{/tarjeta/abonar}" class="nav-link px-2 link-dark">Abonar</a></li>
+              <li><a th:href="@{/integracion/}" class="nav-link px-2 link-dark">Integración</a></li>
 
               <th:block sec:authorize="hasRole('ROLE_USER')">
                 <li><a th:href="@{/tarjeta/listar}" class="nav-link px-2 link-dark">Mis tarjetas</a></li>

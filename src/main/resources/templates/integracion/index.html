@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'integracion')}">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio</title>
+</head>
+<body>
+
+    <div class="container">
+
+        <h3>Panel de integración</h3>
+
+        <hr>
+
+        <div class="row">
+
+            <th:block th:if="${apikey == null}">
+                <form th:action="@{crearAPIKey}" method="post">
+                    <button type="success" class="btn" style="background-color: purple; color:white;">Generar APIKey</button>
+                </form>
+            </th:block>
+
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <th:block th:if="${apikey != null}">
+
+                <p>Esta es su API Key para poder hacer el uso del servicio de FuxiaPass, no la comparta con nadie y guárdela en un lugar seguro, no nos hacemos responsables por el mal uso de esta.</p>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>API Key</th>
+                            <th>Fecha emisión</th>
+                            <th>Válida desde</th>
+                            <th>Fecha de vencimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td th:text="${apikey.token}"></td>
+                            <td th:text="${#dates.format(apikey.createDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                            <td th:text="${#dates.format(apikey.validSince, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                            <td th:text="${#dates.format(apikey.dueDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </th:block>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+    
+        /*<![CDATA[*/
+        var status = /*[[${status}]]*/ "";
+        var mensaje = /*[[${mensaje}]]*/ "";
+        /*]]>*/
+        
+        window.addEventListener('load', function() {
+          if(status !== null && mensaje !== null){
+            Swal.fire({
+              icon: status,
+              title: mensaje
+            });
+          }
+        });
+      
+      </script>
+
+</body>
+</html>

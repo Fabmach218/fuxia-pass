@@ -14,8 +14,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.CreationTimestamp;
-
 import lombok.*;
 
 @Getter
@@ -23,26 +21,32 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "t_pago")
-public class Pago {
+@Table(name = "t_request")
+public class Request {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
+    
     @ManyToOne(optional = false, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(updatable = false)
     @NotNull
-    private Tarjeta tarjeta;
+    private Token token;
 
-    private String descripcion;
-
-    @Column(columnDefinition = "numeric(18,2)")
+    @Column(updatable = false)
     @NotNull
-    private Double monto;
-
-    @NotNull
-    @CreationTimestamp
     private Date fechaHora;
+
+    @Column(updatable = false)
+    @NotNull
+    private String httpMethod;
+
+    @Column(updatable = false)
+    @NotNull
+    private String action;
+
+    @Column(updatable = false)
+    @NotNull
+    private String status;
 
 }

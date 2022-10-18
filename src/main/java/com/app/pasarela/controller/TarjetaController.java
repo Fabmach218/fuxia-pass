@@ -11,9 +11,11 @@ import javax.validation.Valid;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -146,7 +148,7 @@ public class TarjetaController {
                 tarjeta.setTipo("M");
             }
 
-            String dueDate = Methods.generarAleatorio(1, 12) + "/" + Methods.generarAleatorio(2023, 2027); //Generamos una fecha entre el 2023 y el 2027
+            String dueDate = Methods.generarAleatorio(1, 12) + "/" + Methods.generarAleatorio(2026, 2029); //Generamos una fecha entre el 2023 y el 2027
 
             while(dueDate.length() < 7){
                 dueDate = "0" + dueDate;
@@ -206,7 +208,10 @@ public class TarjetaController {
     @RequestMapping(value = "/pagar", method = RequestMethod.POST)
     public String pagar(Model model, @Valid ModelPagoAbono form, BindingResult result, RedirectAttributes redirectAttributes){
 
-        HttpEntity<Object> entity = new HttpEntity<Object>(form);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("apikey", System.getenv("API_KEY_TARJETAS"));
+
+        HttpEntity<Object> entity = new HttpEntity<Object>(form, headers);
         ResponseEntity<ModelRespuestaPagoAbono> responseEntity;
 
         try{
@@ -258,7 +263,10 @@ public class TarjetaController {
     @RequestMapping(value = "/abonar", method = RequestMethod.POST)
     public String abonar(Model model, @Valid ModelPagoAbono form, BindingResult result, RedirectAttributes redirectAttributes){
 
-        HttpEntity<Object> entity = new HttpEntity<Object>(form);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("apikey", System.getenv("API_KEY_TARJETAS"));
+
+        HttpEntity<Object> entity = new HttpEntity<Object>(form, headers);
         ResponseEntity<ModelRespuestaPagoAbono> responseEntity;
 
         try{
@@ -317,9 +325,13 @@ public class TarjetaController {
 
     @Secured("ROLE_USER")
     @RequestMapping(value = "/ver/{id}", method = RequestMethod.GET)
-    public String verTarjeta(@PathVariable("id") Integer id, @RequestParam(defaultValue="") String fechaInicio, @RequestParam(defaultValue="") String fechaFin, Model model, HttpSession session){
+    public String verTarjeta(@PathVariable("id") Integer id, @RequestParam(defaultValue="") String fechaInicio, @RequestParam(defaultValue="") String fechaFin, Authentication auth, Model model, HttpSession session){
 
         Tarjeta t = _dataTarjetas.findById(id).get();
+
+        if(!_dataUsuarios.findByUsername(auth.getName()).equals(t.getUsuario())){
+            return "redirect:/";
+        }
 
         session.setAttribute("tarjetaId", id);
         ModelTarjetaEdit tarjetaEdit = new ModelTarjetaEdit();

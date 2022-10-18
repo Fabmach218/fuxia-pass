@@ -1,7 +1,5 @@
 package com.app.pasarela.model;
 
-import lombok.*;
-
 import java.util.Date;
 
 import javax.persistence.CascadeType;
@@ -16,48 +14,39 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
+import lombok.*;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "t_tarjeta")
-public class Tarjeta {
+@Table(name = "t_token")
+public class Token {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(updatable = false, unique = true)
+    @Column(unique = true, updatable = false)
     @NotNull
-    private String credenciales;
+    private String token;
 
     @Column(updatable = false)
     @NotNull
+    private Date createDate;
+
+    @Column(updatable = false)
+    @NotNull
+    private Date validSince;
+    
+    @Column(updatable = false)
+    @NotNull
     private Date dueDate;
-
-    @Column(columnDefinition = "char(1)", updatable = false)
-    @NotNull
-    private String tipo;
-
-    @NotNull
-    private boolean active;
 
     @ManyToOne(optional = false, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(updatable = false)
     @NotNull
     private Usuario usuario;
-
-    @Column(columnDefinition = "char(3)", updatable = false)
-    @NotNull
-    private String moneda;
-
-    @Column(columnDefinition = "numeric(18,2)")
-    @NotNull
-    private Double saldo;
-
-    @Column(columnDefinition = "numeric(18,2)")
-    @NotNull
-    private Double limDiario;
 
 }
