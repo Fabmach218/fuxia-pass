@@ -1,5 +1,10 @@
 package com.app.pasarela.controller;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
@@ -13,19 +18,24 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.app.pasarela.integration.reniec.ReniecApi;
 import com.app.pasarela.integration.reniec.UserReniec;
+import com.app.pasarela.model.Pago;
 import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.Usuario;
 import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.model.dto.ModelRespuestaPagoAbono;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
+import com.app.pasarela.model.dto.ModelTarjetaEdit;
+import com.app.pasarela.repository.PagoRepository;
 import com.app.pasarela.repository.TarjetaRepository;
 import com.app.pasarela.service.IUsuarioService;
 import com.app.pasarela.util.Constants;
@@ -46,6 +56,9 @@ public class TarjetaController {
 
     @Autowired
     private TarjetaRepository _dataTarjetas;
+
+    @Autowired
+    private PagoRepository _dataPagos;
 
     @Secured("ROLE_ADMIN")
     @GetMapping("/validarDNI")
@@ -282,14 +295,88 @@ public class TarjetaController {
     }
 
     @Secured("ROLE_USER")
-    @RequestMapping(value = "/lista", method = RequestMethod.GET)
+    @RequestMapping(value = "/listar", method = RequestMethod.GET)
     public String tarjetas(Model model, HttpSession session){
 
         Usuario u = (Usuario)session.getAttribute("usuario");
 
-        model.addAttribute("listaTarjetas", _dataTarjetas.findByUsuario(u.getId()));
-        System.out.println(_dataTarjetas.findByUsuario(u.getId()).size());
+        List<Tarjeta> listaTarjetas = _dataTarjetas.findByUsuario(u.getId());
+
+        for(Tarjeta t : listaTarjetas){
+
+            String credenciales = Methods.decodeBase64(t.getCredenciales());
+            t.setCredenciales(credenciales.substring(0,4) + " XXXX XXXX " + credenciales.substring(15,19));
+
+        }
+
+        model.addAttribute("listaTarjetas", listaTarjetas);
+        System.out.println(listaTarjetas.size());
         return "tarjeta/lista";
+
+    }
+
+    @Secured("ROLE_USER")
+    @RequestMapping(value = "/ver/{id}", method = RequestMethod.GET)
+    public String verTarjeta(@PathVariable("id") Integer id, @RequestParam(defaultValue="") String fechaInicio, @RequestParam(defaultValue="") String fechaFin, Model model, HttpSession session){
+
+        Tarjeta t = _dataTarjetas.findById(id).get();
+
+        session.setAttribute("tarjetaId", id);
+        ModelTarjetaEdit tarjetaEdit = new ModelTarjetaEdit();
+        tarjetaEdit.setId(id);
+        tarjetaEdit.setActive(t.isActive());
+        tarjetaEdit.setLimDiario(t.getLimDiario());
+
+        model.addAttribute("monedaTarjeta", t.getMoneda());
+        model.addAttribute("tarjeta", tarjetaEdit);
+
+        Calendar calInicio = Calendar.getInstance();
+        calInicio.set(Calendar.DAY_OF_MONTH, 1);
+        
+        Calendar calFin = Calendar.getInstance();
+        calFin.set(Calendar.DATE, calFin.getActualMaximum(Calendar.DATE));
+
+        model.addAttribute("idTarjeta", id);
+
+        if(fechaInicio.isBlank()){
+            fechaInicio = new SimpleDateFormat("yyyy-MM-dd").format(calInicio.getTime());
+        }
+
+        if(fechaFin.isBlank()){
+            fechaFin = new SimpleDateFormat("yyyy-MM-dd").format(calFin.getTime());
+        }
+
+        model.addAttribute("fechaInicio", fechaInicio);
+        model.addAttribute("fechaFin", fechaFin);
+
+        List<Pago> listaPagos = _dataPagos.getPagosTarjeta(id, fechaInicio + " 00:00:00", fechaFin + " 23:59:59");
+        
+        model.addAttribute("listaPagos", listaPagos);
+        
+        return "tarjeta/ver";
+
+    }
+
+    @Secured("ROLE_USER")
+    @RequestMapping(value = "/edit", method = RequestMethod.POST)
+    public String editarTarjeta(@Valid ModelTarjetaEdit tarjeta, BindingResult result, Model model, HttpSession session, RedirectAttributes redirectAttributes){
+
+        tarjeta.setId((Integer)session.getAttribute("tarjetaId"));
+
+        if(result.hasErrors()){
+            redirectAttributes.addAttribute("id", tarjeta.getId());
+            return "redirect:/tarjeta/ver/{id}";
+        }else{
+
+            Tarjeta t = _dataTarjetas.findById(tarjeta.getId()).get();
+            t.setActive(tarjeta.isActive());
+            t.setLimDiario(tarjeta.getLimDiario());
+            _dataTarjetas.save(t);
+            redirectAttributes.addAttribute("id", tarjeta.getId());
+            return "redirect:/tarjeta/ver/{id}";
+
+        }     
+
 
     }
 

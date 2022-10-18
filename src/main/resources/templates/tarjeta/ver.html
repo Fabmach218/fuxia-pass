@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<html xmlns:th="https://www.thymeleaf.org" 
+    th:replace="~{fragments/layout :: layout (~{::body},'tarjeta')}">
+
+<body>
+ 
+    <div class="container">
+
+        <div class="row">
+
+            <h5>Parámetros</h5>
+
+            <form class="form" th:object="${tarjeta}" th:action="@{/tarjeta/edit}" method="post">
+                <input type="text" th:field="*{id}" hidden>
+                <div class="form-row">
+
+                    <div class="col-md-6">
+
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" th:field="*{active}" required>
+                            <label class="form-check-label" for="active">Compras por internet</label>
+                          </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label for="limDiario">Límite diario</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text" th:text="${monedaTarjeta == 'PEN'} ? 'S/.' : '$'"></div>
+                            </div>
+                            <input type="number" step="0.01" class="form-control" th:field="*{limDiario}" required>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="form-row">
+                    <div class="col-md">
+                        <button type="submit" class="btn" style="background-color: purple; color: white;">Guardar</button>
+                    </div>
+                </div>
+
+            </form>
+
+
+        </div>
+
+        <hr>
+
+        <div class="row">
+            
+            <h5>Pagos realizados</h5>
+
+            <form class="form-inline" th:action="@{/tarjeta/ver/} + ${idTarjeta}" method="get">
+
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="fechaInicio" class="sr-only">Desde</label>
+                    <input type="date" class="form-control" name="fechaInicio" th:value="${fechaInicio}" required>
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="fechaFin" class="sr-only">Hasta</label>
+                    <input type="date" class="form-control" name="fechaFin" th:value="${fechaFin}" required>
+                </div>
+                <button type="submit" class="btn mb-2" style="background-color: purple; color: white;">Filtrar</button>
+
+            </form>
+
+            <table class="table">
+
+                <thead>
+                    <tr>
+                        <th>Fecha y hora</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr th:each="pago : ${listaPagos}">
+                        <td th:text="${#dates.format(pago.fechaHora, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                        <td th:text="${monedaTarjeta == 'PEN'} ? 'S/. ' + ${pago.monto} : '$ ' + ${pago.monto}" style="color:red;"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

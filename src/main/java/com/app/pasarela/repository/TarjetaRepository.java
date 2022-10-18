@@ -15,7 +15,7 @@ public interface TarjetaRepository extends JpaRepository<Tarjeta, Integer>{
     @Query(value = "SELECT t FROM Tarjeta t WHERE t.credenciales = :credenciales")
     Tarjeta findByCredenciales(@Param("credenciales") String credenciales);
 
-    @Query(value = "SELECT t FROM Tarjeta t WHERE t.usuario.id = :usuarioId")
+    @Query(value = "SELECT t FROM Tarjeta t WHERE t.usuario.id = :usuarioId AND NOW() <= t.dueDate")
     List<Tarjeta> findByUsuario(@Param("usuarioId") Integer usuarioId);
 
 }
