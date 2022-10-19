@@ -13,15 +13,20 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.app.pasarela.integration.reniec.ReniecApi;
+import com.app.pasarela.integration.reniec.UserReniec;
 import com.app.pasarela.model.Pago;
 import com.app.pasarela.model.Request;
 import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.Token;
 import com.app.pasarela.model.dto.ModelPagoAbono;
+import com.app.pasarela.model.dto.ModelTarjetaCreate;
 import com.app.pasarela.repository.PagoRepository;
 import com.app.pasarela.repository.RequestRepository;
 import com.app.pasarela.repository.TarjetaRepository;
 import com.app.pasarela.repository.TokenRepository;
+import com.app.pasarela.service.IUsuarioService;
+import com.app.pasarela.util.Constants;
 import com.app.pasarela.util.Methods;
 
 @RestController
@@ -40,23 +45,164 @@ public class TarjetaRestController {
     @Autowired
     private RequestRepository _dataRequests;
 
-    @PostMapping(value = "/pagar", produces = "application/json")
-    public ResponseEntity<Map<String, Object>> pagar(@RequestHeader(required = true) String apikey, @RequestBody ModelPagoAbono form){
+    @Autowired
+    private ReniecApi _reniecApi;
+
+    @Autowired
+    private IUsuarioService _dataUsuarios;
+
+    @PostMapping(value = "/crearTarjeta", produces = "application/json")
+    public ResponseEntity<Map<String,Object>> crearTarjeta(@RequestHeader(required = true) String apikey, @RequestBody ModelTarjetaCreate form){
 
         Token t = validarToken(apikey);
-
-        if(t == null){
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
-        String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
-        String credencialesEncode = Methods.encodeBase64(credenciales);
-        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(credencialesEncode);
 
         Map<String, Object> respuesta = new HashMap<>();
 
         String status = "";
         String mensaje = "";
+
+        if(t == null){
+
+            status = "error";
+            mensaje = "No está autorizado a utilizar este servicio, revise sus credenciales";
+
+            respuesta.put("status", status);
+            respuesta.put("tarjeta", null);
+            respuesta.put("mensaje", mensaje);
+
+            return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.FORBIDDEN);
+        }
+
+        UserReniec user = _reniecApi.findExitsUserByDni(form.getDni());
+
+        if(user != null){
+
+            Tarjeta tarjeta = new Tarjeta();
+
+            tarjeta.setDni(form.getDni());
+            tarjeta.setTipo(form.getTipo());
+            tarjeta.setMoneda(form.getMoneda());
+
+            String nroTarjetaJunto = "";
+
+            if(form.getTipo().equals("V")){
+                nroTarjetaJunto = Methods.generarAleatorio(4000000000000000L, 4999999999999999L) + "";   
+            }else{
+                nroTarjetaJunto = Methods.generarAleatorio(5000000000000000L, 5999999999999999L) + "";
+            }
+            
+            String nroTarjetaFormateado = "";
+
+            for(int i = 0; i < nroTarjetaJunto.length(); i++){
+                
+                nroTarjetaFormateado += nroTarjetaJunto.charAt(i);
+
+                if((i+1) % 4 == 0){
+                    nroTarjetaFormateado += " ";
+                }
+            }
+
+            nroTarjetaFormateado = nroTarjetaFormateado.trim(); //Quitamos el espacio al final
+
+            String dueDate = Methods.generarAleatorio(1, 12) + "/" + Methods.generarAleatorio(2026, 2029); //Generamos una fecha entre el 2026 y el 2029
+
+            while(dueDate.length() < 7){
+                dueDate = "0" + dueDate;
+            }
+
+            tarjeta.setDueDate(Methods.obtenerUltimoDiaMes(dueDate));
+
+            String cvv = Methods.generarAleatorio(10, 999) + "";
+            
+            while(cvv.length() < 3){
+                cvv = "0" + cvv;
+            }
+
+            String credenciales = nroTarjetaFormateado + "," + dueDate + "," + cvv + "," + form.getNombre().toUpperCase();
+            
+            tarjeta.setCredenciales(Methods.encodeBase64(credenciales));
+            tarjeta.setActive(false);
+            tarjeta.setUsuario(_dataUsuarios.findByUsername(form.getDni()));
+
+            Double maxDiario = 0.0;
+
+            if(form.getMoneda().equals("PEN")){
+                maxDiario = Constants.maxPENDefault;
+            }else{
+                maxDiario = Constants.maxUSDDefault;
+            }
+
+            tarjeta.setSaldo(0.0);            
+            tarjeta.setLimDiario(maxDiario);
+            Tarjeta tarjetaCreated = _dataTarjetas.save(tarjeta);
+
+            status = "success";
+            mensaje = "Tarjeta creada con éxito.";
+
+            respuesta.put("status", status);
+            respuesta.put("tarjeta", tarjetaCreated);
+            respuesta.put("mensaje", mensaje);
+
+            Request r = new Request();
+
+            r.setToken(t);
+            r.setFechaHora(new Date());
+            r.setHttpMethod("POST");
+            r.setAction("crearTarjeta");
+            r.setStatus(status);
+            _dataRequests.save(r);
+
+            return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.CREATED);
+
+        }else{
+
+            status = "error";
+            mensaje = "No se encuentra el DNI en la RENIEC.";
+
+            respuesta.put("status", status);
+            respuesta.put("tarjeta", null);
+            respuesta.put("mensaje", mensaje);
+
+            Request r = new Request();
+
+            r.setToken(t);
+            r.setFechaHora(new Date());
+            r.setHttpMethod("POST");
+            r.setAction("crearTarjeta");
+            r.setStatus(status);
+            _dataRequests.save(r);
+
+            return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.NOT_FOUND);
+
+        }
+
+    }
+
+    @PostMapping(value = "/pagar", produces = "application/json")
+    public ResponseEntity<Map<String, Object>> pagar(@RequestHeader(required = true) String apikey, @RequestBody ModelPagoAbono form){
+
+        Token t = validarToken(apikey);
+
+        Map<String, Object> respuesta = new HashMap<>();
+
+        String status = "";
+        String mensaje = "";
+
+        if(t == null){
+
+            status = "error";
+            mensaje = "No está autorizado a utilizar este servicio, revise sus credenciales.";
+
+            respuesta.put("status", status);
+            respuesta.put("tarjeta", null);
+            respuesta.put("mensaje", mensaje);
+
+            return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.FORBIDDEN);
+        }
+
+        String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
+        String credencialesEncode = Methods.encodeBase64(credenciales);
+        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(credencialesEncode);
 
         if(validarTarjeta(tarjeta)){
 
@@ -146,18 +292,25 @@ public class TarjetaRestController {
 
         Token t = validarToken(apikey);
 
+        Map<String, Object> respuesta = new HashMap<>();
+
+        String status = "";
+        String mensaje = "";
+
         if(t == null){
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+            status = "error";
+            mensaje = "No está autorizado a utilizar este servicio, revise sus credenciales.";
+
+            respuesta.put("status", status);
+            respuesta.put("tarjeta", null);
+            respuesta.put("mensaje", mensaje);
+            return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.FORBIDDEN);
         }
 
         String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
         String credencialesEncode = Methods.encodeBase64(credenciales);
         Tarjeta tarjeta = _dataTarjetas.findByCredenciales(credencialesEncode);
-
-        Map<String, Object> respuesta = new HashMap<>();
-
-        String status = "";
-        String mensaje = "";
 
         if(validarTarjeta(tarjeta)){
 

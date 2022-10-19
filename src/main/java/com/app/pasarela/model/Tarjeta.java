@@ -43,9 +43,8 @@ public class Tarjeta {
     @NotNull
     private boolean active;
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(updatable = false)
-    @NotNull
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn
     private Usuario usuario;
 
     @Column(columnDefinition = "char(3)", updatable = false)
@@ -59,5 +58,9 @@ public class Tarjeta {
     @Column(columnDefinition = "numeric(18,2)")
     @NotNull
     private Double limDiario;
+
+    @Column(columnDefinition = "char(8)", updatable = false)
+    @NotNull
+    private String dni;
 
 }

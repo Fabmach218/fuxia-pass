@@ -76,34 +76,25 @@ public class TarjetaController {
         usuario = _reniecApi.findExitsUserByDni(dni);
         
         if(usuario != null){
+        
+            ModelTarjetaCreate tarjeta = new ModelTarjetaCreate();
+            tarjeta.setDni(dni);
             
-            if(_dataUsuarios.findByUsername(dni) != null){
+            String nombre = "";
 
-                ModelTarjetaCreate tarjeta = new ModelTarjetaCreate();
-                tarjeta.setDni(dni);
-                
-                String nombre = "";
-
-                if(usuario.getNombres().split(" ")[0].length() < 7){
-                    nombre = usuario.getNombres().split(" ")[0];
-                }else{
-                    nombre = usuario.getNombres().charAt(0) + ".";
-                }
-
-                nombre += " " + usuario.getApePat() + " " + usuario.getApeMat().charAt(0) + ".";
-                nombre.toUpperCase();
-                tarjeta.setNombre(nombre);
-
-                redirectAttributes.addFlashAttribute("tarjeta", tarjeta);
-                redirectAttributes.addFlashAttribute("mensaje", "DNI validado, puede proceder a crear la tarjeta");
-                return "redirect:/tarjeta/create";
-
+            if(usuario.getNombres().split(" ")[0].length() < 7){
+                nombre = usuario.getNombres().split(" ")[0];
             }else{
-
-                model.addAttribute("mensaje", "El usuario no existe, no se le puede registrar una tarjeta!!!");
-                return "tarjeta/formDNI";
-
+                nombre = usuario.getNombres().charAt(0) + ".";
             }
+
+            nombre += " " + usuario.getApePat() + " " + usuario.getApeMat().charAt(0) + ".";
+            nombre.toUpperCase();
+            tarjeta.setNombre(nombre);
+
+            redirectAttributes.addFlashAttribute("tarjeta", tarjeta);
+            redirectAttributes.addFlashAttribute("mensaje", "DNI validado, puede proceder a crear la tarjeta");
+            return "redirect:/tarjeta/create";
 
         }else{
 
@@ -127,7 +118,13 @@ public class TarjetaController {
 
             Tarjeta tarjeta = new Tarjeta();
 
-            String nroTarjetaJunto = Methods.generarAleatorio(4000000000000000L, 5999999999999999L) + "";
+            String nroTarjetaJunto = "";
+
+            if(tarjetaCreate.getTipo().equals("V")){
+                nroTarjetaJunto = Methods.generarAleatorio(4000000000000000L, 4999999999999999L) + "";   
+            }else{
+                nroTarjetaJunto = Methods.generarAleatorio(5000000000000000L, 5999999999999999L) + "";
+            }
             
             String nroTarjetaFormateado = "";
 
@@ -142,13 +139,9 @@ public class TarjetaController {
 
             nroTarjetaFormateado = nroTarjetaFormateado.trim(); //Quitamos el espacio al final
             
-            if(nroTarjetaFormateado.charAt(0) == '4'){ //Si empieza con 4 es VISA, con 5 es MasterCard
-                tarjeta.setTipo("V");
-            }else{
-                tarjeta.setTipo("M");
-            }
+            tarjeta.setTipo(tarjetaCreate.getTipo());
 
-            String dueDate = Methods.generarAleatorio(1, 12) + "/" + Methods.generarAleatorio(2026, 2029); //Generamos una fecha entre el 2023 y el 2027
+            String dueDate = Methods.generarAleatorio(1, 12) + "/" + Methods.generarAleatorio(2026, 2029); //Generamos una fecha entre el 2026 y el 2029
 
             while(dueDate.length() < 7){
                 dueDate = "0" + dueDate;
@@ -166,6 +159,7 @@ public class TarjetaController {
             
             tarjeta.setCredenciales(Methods.encodeBase64(credenciales));
             tarjeta.setActive(false);
+            tarjeta.setDni(tarjetaCreate.getDni());
             tarjeta.setUsuario(_dataUsuarios.findByUsername(tarjetaCreate.getDni()));
             tarjeta.setMoneda(tarjetaCreate.getMoneda());
 

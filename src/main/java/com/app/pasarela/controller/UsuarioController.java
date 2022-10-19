@@ -1,5 +1,7 @@
 package com.app.pasarela.controller;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +15,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.app.pasarela.integration.reniec.ReniecApi;
 import com.app.pasarela.integration.reniec.UserReniec;
+import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.Usuario;
+import com.app.pasarela.repository.TarjetaRepository;
 import com.app.pasarela.service.IUsuarioService;
 
 @Controller
@@ -25,6 +29,9 @@ public class UsuarioController {
 
     @Autowired
     private ReniecApi _reniecApi;
+
+    @Autowired
+    private TarjetaRepository _dataTarjetas;
 
     @RequestMapping(value = "/validarDNI", method = RequestMethod.GET)
     public String validarDNI(Model model){
@@ -86,6 +93,18 @@ public class UsuarioController {
         }else{
             _dataUsuarios.registrar(usuario);
             model.addAttribute("usuario", usuario);
+
+            List<Tarjeta> listaTarjetasGuardadas = _dataTarjetas.findByDniAndUserNull(usuario.getUsername());
+
+            if(listaTarjetasGuardadas.size() > 0){
+
+                for(Tarjeta t : listaTarjetasGuardadas){
+                    t.setUsuario(usuario);
+                    _dataTarjetas.save(t);
+                }
+
+            }
+
         }
         return "redirect:/usuario/login";
     }
