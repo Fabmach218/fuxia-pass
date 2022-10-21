@@ -7,8 +7,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -182,7 +182,7 @@ public class TarjetaRestController {
 
     }
 
-    @PatchMapping(value = "/activar", produces = "application/json")
+    @PutMapping(value = "/activar", produces = "application/json")
     public ResponseEntity<String> activar(@RequestHeader(required = true) String apikey, @RequestBody ModelActivarTarjeta form){
 
         Token t = validarToken(apikey);
@@ -204,7 +204,7 @@ public class TarjetaRestController {
 
         r.setToken(t);
         r.setFechaHora(new Date());
-        r.setHttpMethod("PATCH");
+        r.setHttpMethod("PUT");
         r.setAction("activar");
 
         if(existeTarjeta(tarjeta)){
