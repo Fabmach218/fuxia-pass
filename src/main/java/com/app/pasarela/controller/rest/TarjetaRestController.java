@@ -268,6 +268,7 @@ public class TarjetaRestController {
 
             respuesta.setMoneda(tarjeta.getMoneda());
             respuesta.setSaldo(tarjeta.getSaldo());
+            respuesta.setActive(tarjeta.isActive());
             status = "success";
             mensaje = "Se obtuvo el saldo de la tarjeta.";
             r.setStatus(status);

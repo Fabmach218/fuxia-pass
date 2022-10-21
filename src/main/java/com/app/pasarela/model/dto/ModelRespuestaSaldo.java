@@ -11,6 +11,7 @@ public class ModelRespuestaSaldo {
     private String status;
     private String moneda;
     private Double saldo;
+    private boolean active;
     private String mensaje;
 
 }
