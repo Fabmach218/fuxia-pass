@@ -31,6 +31,15 @@ xmlns:th="https://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~
                 <option value="USD">Dólares ($)</option>
             </select>
         </div>
+        
+        <div class="form-row">
+            <label>Tipo</label>
+            <select class="form-control" th:field="*{tipo}" required>
+                <option value="">- Seleccione -</option>
+                <option value="V">VISA</option>
+                <option value="M">MasterCard</option>
+            </select>
+        </div>
 
         <div class="form-row">
             <button class="btn btn-primary">Crear</button>

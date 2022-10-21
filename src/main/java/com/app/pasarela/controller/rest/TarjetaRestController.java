@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -19,7 +20,10 @@ import com.app.pasarela.model.Pago;
 import com.app.pasarela.model.Request;
 import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.Token;
+import com.app.pasarela.model.dto.ModelActivarTarjeta;
+import com.app.pasarela.model.dto.ModelBuscarTarjeta;
 import com.app.pasarela.model.dto.ModelPagoAbono;
+import com.app.pasarela.model.dto.ModelRespuestaSaldo;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
 import com.app.pasarela.repository.PagoRepository;
 import com.app.pasarela.repository.RequestRepository;
@@ -174,6 +178,115 @@ public class TarjetaRestController {
 
             return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.NOT_FOUND);
 
+        }
+
+    }
+
+    @PatchMapping(value = "/activar", produces = "application/json")
+    public ResponseEntity<String> activar(@RequestHeader(required = true) String apikey, @RequestBody ModelActivarTarjeta form){
+
+        Token t = validarToken(apikey);
+
+        String mensaje = "";
+
+        if(t == null){
+
+            mensaje = "No está autorizado a utilizar este servicio, revise sus credenciales.";
+
+            return new ResponseEntity<String>(mensaje, HttpStatus.FORBIDDEN);
+        }
+
+        String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
+        String credencialesEncode = Methods.encodeBase64(credenciales);
+        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(credencialesEncode);
+
+        Request r = new Request();
+
+        r.setToken(t);
+        r.setFechaHora(new Date());
+        r.setHttpMethod("PATCH");
+        r.setAction("activar");
+
+        if(existeTarjeta(tarjeta)){
+
+            tarjeta.setActive(form.isActive());
+            _dataTarjetas.save(tarjeta);
+            
+            if(form.isActive()){
+                mensaje = "Tarjeta activada con éxito.";
+            }else{
+                mensaje = "Tarjeta desactivada con éxito.";
+            }
+
+            r.setStatus("success");
+            _dataRequests.save(r);
+
+            return new ResponseEntity<String>(mensaje, HttpStatus.OK);
+
+        }else{
+            mensaje = "La tarjeta no existe o está vencida.";
+            r.setStatus("error");
+            _dataRequests.save(r);
+            return new ResponseEntity<String>(mensaje, HttpStatus.NOT_FOUND);
+        }
+
+    }
+
+    @PostMapping(value = "/saldo", produces = "application/json")
+    public ResponseEntity<ModelRespuestaSaldo> saldo(@RequestHeader(required = true) String apikey, @RequestBody ModelBuscarTarjeta form){
+
+        Token t = validarToken(apikey);
+
+        ModelRespuestaSaldo respuesta = new ModelRespuestaSaldo();
+
+        String status = "";
+        String mensaje = "";
+
+        if(t == null){
+
+            status = "error";
+            mensaje = "No está autorizado a utilizar este servicio, revise sus credenciales.";
+
+            respuesta.setStatus(status);
+            respuesta.setMensaje(mensaje);
+
+            return new ResponseEntity<ModelRespuestaSaldo>(respuesta, HttpStatus.FORBIDDEN);
+        }
+
+        String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
+        String credencialesEncode = Methods.encodeBase64(credenciales);
+        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(credencialesEncode);
+
+        Request r = new Request();
+
+        r.setToken(t);
+        r.setFechaHora(new Date());
+        r.setHttpMethod("POST");
+        r.setAction("saldo");
+
+        if(existeTarjeta(tarjeta)){
+
+            respuesta.setMoneda(tarjeta.getMoneda());
+            respuesta.setSaldo(tarjeta.getSaldo());
+            status = "success";
+            mensaje = "Se obtuvo el saldo de la tarjeta.";
+            r.setStatus(status);
+            _dataRequests.save(r);
+
+            respuesta.setStatus(status);
+            respuesta.setMensaje(mensaje);
+
+            return new ResponseEntity<ModelRespuestaSaldo>(respuesta, HttpStatus.OK);
+
+        }else{
+            status = "error";
+            mensaje = "La tarjeta no existe o está vencida.";
+            r.setStatus(status);
+            _dataRequests.save(r);
+
+            respuesta.setStatus(status);
+            respuesta.setMensaje(mensaje);
+            return new ResponseEntity<ModelRespuestaSaldo>(respuesta, HttpStatus.NOT_FOUND);
         }
 
     }
@@ -373,6 +486,16 @@ public class TarjetaRestController {
     public boolean validarTarjeta(Tarjeta t){
 
         if(t == null || t.isActive() == false || new Date().after(t.getDueDate())){
+            return false;
+        }else{
+            return true;
+        }
+
+    }
+
+    public boolean existeTarjeta(Tarjeta t){
+
+        if(t == null || new Date().after(t.getDueDate())){
             return false;
         }else{
             return true;
