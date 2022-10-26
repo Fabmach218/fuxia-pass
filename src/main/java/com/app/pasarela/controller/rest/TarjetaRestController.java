@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.pasarela.integration.reniec.ReniecApi;
 import com.app.pasarela.integration.reniec.UserReniec;
-import com.app.pasarela.model.Pago;
+import com.app.pasarela.model.Movimiento;
 import com.app.pasarela.model.Request;
 import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.Token;
@@ -25,7 +25,7 @@ import com.app.pasarela.model.dto.ModelBuscarTarjeta;
 import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.model.dto.ModelRespuestaSaldo;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
-import com.app.pasarela.repository.PagoRepository;
+import com.app.pasarela.repository.MovimientoRepository;
 import com.app.pasarela.repository.RequestRepository;
 import com.app.pasarela.repository.TarjetaRepository;
 import com.app.pasarela.repository.TokenRepository;
@@ -41,7 +41,7 @@ public class TarjetaRestController {
     private TarjetaRepository _dataTarjetas;
 
     @Autowired
-    private PagoRepository _dataPagos;
+    private MovimientoRepository _dataMovimientos;
 
     @Autowired
     private TokenRepository _dataTokens;
@@ -320,7 +320,7 @@ public class TarjetaRestController {
 
         if(validarTarjeta(tarjeta)){
 
-            Double montoGastadoHoy = _dataPagos.getSumMontoTarjetaHoy(tarjeta.getId());
+            Double montoGastadoHoy = _dataMovimientos.getSumMontoTarjetaHoy(tarjeta.getId());
             if(montoGastadoHoy == null){ montoGastadoHoy = 0.0;}
 
             if(form.getMoneda().equals(tarjeta.getMoneda())){
@@ -329,11 +329,12 @@ public class TarjetaRestController {
 
                     if(montoGastadoHoy + form.getMonto() <= tarjeta.getLimDiario()){
 
-                        Pago p = new Pago();
-                        p.setTarjeta(tarjeta);
-                        p.setMonto(form.getMonto());
-                        p.setFechaHora(new Date());
-                        _dataPagos.save(p);
+                        Movimiento m = new Movimiento();
+                        m.setTarjeta(tarjeta);
+                        m.setMonto(form.getMonto() * -1);
+                        m.setFechaHora(new Date());
+                        m.setTipo("P");
+                        _dataMovimientos.save(m);
 
                         tarjeta.setSaldo(tarjeta.getSaldo() - form.getMonto());
                         _dataTarjetas.save(tarjeta);
@@ -429,6 +430,13 @@ public class TarjetaRestController {
         if(validarTarjeta(tarjeta)){
 
             if(form.getMoneda().equals(tarjeta.getMoneda())){
+
+                Movimiento m = new Movimiento();
+                m.setTarjeta(tarjeta);
+                m.setMonto(form.getMonto());
+                m.setFechaHora(new Date());
+                m.setTipo("A");
+                _dataMovimientos.save(m);
 
                 tarjeta.setSaldo(tarjeta.getSaldo() + form.getMonto());
                 _dataTarjetas.save(tarjeta);

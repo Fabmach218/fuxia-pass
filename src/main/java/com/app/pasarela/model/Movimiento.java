@@ -23,8 +23,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "t_pago")
-public class Pago {
+@Table(name = "t_movimiento")
+public class Movimiento {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,5 +44,9 @@ public class Pago {
     @NotNull
     @CreationTimestamp
     private Date fechaHora;
+
+    @Column(columnDefinition = "char(1)")
+    @NotNull
+    private String tipo;
 
 }

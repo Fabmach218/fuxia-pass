@@ -53,7 +53,7 @@
 
         <div class="row">
             
-            <h5>Pagos realizados</h5>
+            <h5>Movimientos realizados</h5>
 
             <form class="form-inline" th:action="@{/tarjeta/ver/} + ${idTarjeta}" method="get">
 
@@ -74,14 +74,26 @@
                 <thead>
                     <tr>
                         <th>Fecha y hora</th>
+                        <th>Descripción</th>
                         <th>Monto</th>
                     </tr>
                 </thead>
 
                 <tbody>
+                    <tr>
+                        <td th:text="${#dates.format(fechaFinDate, 'dd/MM/yyyy') + ' 23:59:59'}"></td>
+                        <td>Saldo Final</td>
+                        <td th:text="${monedaTarjeta == 'PEN'} ? 'S/. ' + ${saldoFinal} : '$ ' + ${saldoFinal}"></td>
+                    </tr>
                     <tr th:each="pago : ${listaPagos}">
                         <td th:text="${#dates.format(pago.fechaHora, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                        <td th:text="${monedaTarjeta == 'PEN'} ? 'S/. ' + ${pago.monto} : '$ ' + ${pago.monto}" style="color:red;"></td>
+                        <td th:text="${pago.descripcion}"></td>
+                        <td th:text="${monedaTarjeta == 'PEN'} ? 'S/. ' + ${pago.monto} : '$ ' + ${pago.monto}" th:style="${pago.monto < 0} ? 'color:red;'"></td>
+                    </tr>
+                    <tr>
+                        <td th:text="${#dates.format(fechaInicioDate, 'dd/MM/yyyy') + ' 00:00:00'}"></td>
+                        <td>Saldo Inicial</td>
+                        <td th:text="${monedaTarjeta == 'PEN'} ? 'S/. ' + ${saldoInicial} : '$ ' + ${saldoInicial}"></td>
                     </tr>
                 </tbody>
             </table>

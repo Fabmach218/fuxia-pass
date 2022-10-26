@@ -1,5 +1,6 @@
 package com.app.pasarela.controller;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,14 +31,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.app.pasarela.integration.reniec.ReniecApi;
 import com.app.pasarela.integration.reniec.UserReniec;
-import com.app.pasarela.model.Pago;
+import com.app.pasarela.model.Movimiento;
 import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.Usuario;
 import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.model.dto.ModelRespuestaPagoAbono;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
 import com.app.pasarela.model.dto.ModelTarjetaEdit;
-import com.app.pasarela.repository.PagoRepository;
+import com.app.pasarela.repository.MovimientoRepository;
 import com.app.pasarela.repository.TarjetaRepository;
 import com.app.pasarela.service.IUsuarioService;
 import com.app.pasarela.util.Constants;
@@ -60,7 +61,7 @@ public class TarjetaController {
     private TarjetaRepository _dataTarjetas;
 
     @Autowired
-    private PagoRepository _dataPagos;
+    private MovimientoRepository _dataMovimientos;
 
     @Secured("ROLE_ADMIN")
     @GetMapping("/validarDNI")
@@ -319,7 +320,7 @@ public class TarjetaController {
 
     @Secured("ROLE_USER")
     @RequestMapping(value = "/ver/{id}", method = RequestMethod.GET)
-    public String verTarjeta(@PathVariable("id") Integer id, @RequestParam(defaultValue="") String fechaInicio, @RequestParam(defaultValue="") String fechaFin, Authentication auth, Model model, HttpSession session){
+    public String verTarjeta(@PathVariable("id") Integer id, @RequestParam(defaultValue="") String fechaInicio, @RequestParam(defaultValue="") String fechaFin, Authentication auth, Model model, HttpSession session) throws ParseException{
 
         Tarjeta t = _dataTarjetas.findById(id).get();
 
@@ -355,9 +356,15 @@ public class TarjetaController {
         model.addAttribute("fechaInicio", fechaInicio);
         model.addAttribute("fechaFin", fechaFin);
 
-        List<Pago> listaPagos = _dataPagos.getPagosTarjeta(id, fechaInicio + " 00:00:00", fechaFin + " 23:59:59");
-        
+        List<Movimiento> listaPagos = _dataMovimientos.getMovimientosTarjeta(id, fechaInicio + " 00:00:00", fechaFin + " 23:59:59");
+        Double saldoInicial = _dataMovimientos.getSaldoInicialFecha(id, fechaInicio + " 00:00:00");
+        Double saldoFinal = _dataMovimientos.getSaldoFinalFecha(id, fechaFin + " 23:59:59");
+
+        model.addAttribute("fechaInicioDate", new SimpleDateFormat("yyyy-MM-dd").parse(fechaInicio));
+        model.addAttribute("saldoInicial", saldoInicial);
         model.addAttribute("listaPagos", listaPagos);
+        model.addAttribute("fechaFinDate", new SimpleDateFormat("yyyy-MM-dd").parse(fechaFin));
+        model.addAttribute("saldoFinal", saldoFinal);
         
         return "tarjeta/ver";
 
