@@ -11,7 +11,7 @@ import com.app.pasarela.model.Movimiento;
 
 @Repository
 public interface MovimientoRepository extends JpaRepository<Movimiento, Integer>{
-    @Query("SELECT sum(m.monto) * -1 FROM Movimiento m WHERE TO_CHAR(m.fechaHora, 'yyyy-MM-dd') = TO_CHAR(NOW(), 'yyyy-MM-dd') AND m.tarjeta.id = :tarjetaId AND m.monto < 0")
+    @Query("SELECT COALESCE(sum(m.monto) * -1, 0.0) FROM Movimiento m WHERE TO_CHAR(m.fechaHora, 'yyyy-MM-dd') = TO_CHAR(NOW(), 'yyyy-MM-dd') AND m.tarjeta.id = :tarjetaId AND m.monto < 0")
     Double getSumMontoTarjetaHoy(@Param("tarjetaId") Integer tarjetaId);
 
     @Query("SELECT m FROM Movimiento m WHERE m.tarjeta.id = :tarjetaId AND m.fechaHora BETWEEN TO_TIMESTAMP(:fechaInicio, 'yyyy-MM-dd HH24:mi:ss') AND TO_TIMESTAMP(:fechaFin, 'yyyy-MM-dd HH24:mi:ss') ORDER BY m.fechaHora DESC")

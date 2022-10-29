@@ -25,6 +25,7 @@ import com.app.pasarela.model.dto.ModelBuscarTarjeta;
 import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.model.dto.ModelRespuestaSaldo;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
+import com.app.pasarela.model.dto.ModelTransferencia;
 import com.app.pasarela.repository.MovimientoRepository;
 import com.app.pasarela.repository.RequestRepository;
 import com.app.pasarela.repository.TarjetaRepository;
@@ -334,6 +335,7 @@ public class TarjetaRestController {
                         m.setMonto(form.getMonto() * -1);
                         m.setFechaHora(new Date());
                         m.setTipo("P");
+                        m.setDescripcion(form.getDescripcion());
                         _dataMovimientos.save(m);
 
                         tarjeta.setSaldo(tarjeta.getSaldo() - form.getMonto());
@@ -436,6 +438,7 @@ public class TarjetaRestController {
                 m.setMonto(form.getMonto());
                 m.setFechaHora(new Date());
                 m.setTipo("A");
+                m.setDescripcion(form.getDescripcion());
                 _dataMovimientos.save(m);
 
                 tarjeta.setSaldo(tarjeta.getSaldo() + form.getMonto());
@@ -485,6 +488,129 @@ public class TarjetaRestController {
         r.setFechaHora(new Date());
         r.setHttpMethod("POST");
         r.setAction("abonar");
+        r.setStatus(status);
+        _dataRequests.save(r);
+
+        return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.OK);
+
+    }
+
+    @PostMapping(value = "/transferir", produces = "application/json")
+    public ResponseEntity<Map<String, Object>> transferir(@RequestHeader(required = true) String apikey, @RequestBody ModelTransferencia form){
+
+        Token t = validarToken(apikey);
+
+        Map<String, Object> respuesta = new HashMap<>();
+
+        String status = "";
+        String mensaje = "";
+
+        if(t == null){
+
+            status = "error";
+            mensaje = "No está autorizado a utilizar este servicio, revise sus credenciales.";
+
+            respuesta.put("status", status);
+            respuesta.put("mensaje", mensaje);
+            return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.FORBIDDEN);
+        }
+
+        String credencialesOrigen = form.getNroTarjetaOrigen() + "," + form.getDueMonthOrigen() + "/" + form.getDueYearOrigen() + "," + form.getCvvOrigen() + "," + form.getNombreOrigen().toUpperCase();
+        String credencialesOrigenEncode = Methods.encodeBase64(credencialesOrigen);
+        Tarjeta tarjetaOrigen = _dataTarjetas.findByCredenciales(credencialesOrigenEncode);
+
+        String credencialesDestino = form.getNroTarjetaDestino() + "," + form.getDueMonthDestino() + "/" + form.getDueYearDestino() + "," + form.getCvvDestino() + "," + form.getNombreDestino().toUpperCase();
+        String credencialesDestinoEncode = Methods.encodeBase64(credencialesDestino);
+        Tarjeta tarjetaDestino = _dataTarjetas.findByCredenciales(credencialesDestinoEncode);
+
+        boolean validarTarjetas = validarTarjeta(tarjetaOrigen) && validarTarjeta(tarjetaDestino);
+
+        if(validarTarjetas){
+
+            boolean validarMonedas = form.getMonedaOrigen().equals(tarjetaOrigen.getMoneda()) && form.getMonedaDestino().equals(tarjetaDestino.getMoneda());
+
+            if(validarMonedas){
+
+                if(!tarjetaOrigen.equals(tarjetaDestino)){
+
+                    if(tarjetaOrigen.getSaldo() >= form.getMontoOrigen()){
+
+                        Double montoGastadoHoy = _dataMovimientos.getSumMontoTarjetaHoy(tarjetaOrigen.getId());
+
+                        if(montoGastadoHoy + form.getMontoOrigen() <= tarjetaOrigen.getLimDiario()){
+                            Movimiento transferenciaOrigen = new Movimiento();
+                            transferenciaOrigen.setTarjeta(tarjetaOrigen);
+                            transferenciaOrigen.setMonto(form.getMontoOrigen() * -1);
+                            transferenciaOrigen.setFechaHora(new Date());
+                            transferenciaOrigen.setTipo("T");
+                            transferenciaOrigen.setDescripcion(form.getDescripcion());
+                            _dataMovimientos.save(transferenciaOrigen);
+
+                            tarjetaOrigen.setSaldo(tarjetaOrigen.getSaldo() - form.getMontoOrigen());
+                            _dataTarjetas.save(tarjetaOrigen);
+
+                            Movimiento transferenciaDestino = new Movimiento();
+                            transferenciaDestino.setTarjeta(tarjetaDestino);
+                            transferenciaDestino.setMonto(form.getMontoDestino());
+                            transferenciaDestino.setFechaHora(new Date());
+                            transferenciaDestino.setTipo("T");
+                            transferenciaDestino.setDescripcion(form.getDescripcion());
+                            _dataMovimientos.save(transferenciaDestino);
+
+                            tarjetaDestino.setSaldo(tarjetaDestino.getSaldo() + form.getMontoDestino());
+                            _dataTarjetas.save(tarjetaDestino);
+
+                            status = "success";
+                            mensaje = "Transferencia realizada exitosamente!!!";
+                        }else{
+                            status = "error";
+                            mensaje = "Límite diario superado!!!";    
+                        }
+
+                        
+                    }else{
+                        status = "error";
+                        mensaje = "Saldo insuficiente!!!";    
+                    }
+
+                }else{
+                    status = "error";
+                    mensaje = "No se puede transferir a su misma cuenta!!!";
+                }
+
+            }else{
+
+                status = "error";
+
+                if(!form.getMonedaOrigen().equals(tarjetaOrigen.getMoneda())){
+                    mensaje = "La moneda de la cuenta de origen no coincide!!!";
+                }else{
+                    mensaje = "La moneda de la cuenta de destino no coincide!!!";
+                }
+
+            }
+
+        }else{
+
+            status = "error";
+            
+            if(!validarTarjeta(tarjetaOrigen)){
+                mensaje = "No se encuentra la tarjeta de origen!!!";
+            }else{
+                mensaje = "No se encuentra la tarjeta de destino!!!";
+            }
+
+        }
+
+        respuesta.put("status", status);
+        respuesta.put("mensaje", mensaje);
+
+        Request r = new Request();
+
+        r.setToken(t);
+        r.setFechaHora(new Date());
+        r.setHttpMethod("POST");
+        r.setAction("transferir");
         r.setStatus(status);
         _dataRequests.save(r);
 

@@ -88,7 +88,7 @@
                     <tr th:each="pago : ${listaPagos}">
                         <td th:text="${#dates.format(pago.fechaHora, 'dd/MM/yyyy HH:mm:ss')}"></td>
                         <td th:text="${pago.descripcion}"></td>
-                        <td th:text="${monedaTarjeta == 'PEN'} ? 'S/. ' + ${pago.monto} : '$ ' + ${pago.monto}" th:style="${pago.monto < 0} ? 'color:red;'"></td>
+                        <td th:text="${monedaTarjeta == 'PEN'} ? 'S/. ' + ${pago.monto} : '$ ' + ${pago.monto}" th:style="${pago.monto < 0} ? 'color:red;' : 'color:green;'"></td>
                     </tr>
                     <tr>
                         <td th:text="${#dates.format(fechaInicioDate, 'dd/MM/yyyy') + ' 00:00:00'}"></td>

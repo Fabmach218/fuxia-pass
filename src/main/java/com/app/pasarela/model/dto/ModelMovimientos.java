@@ -6,17 +6,14 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ModelPagoAbono {
+public class ModelMovimientos {
     
     private String nroTarjeta;
     private String dueMonth;
     private String dueYear;
     private String cvv;
     private String nombre;
-    private String moneda;
-    private Double monto;
-    private Double tcCompra;
-    private Double tcVenta;
-    private String descripcion;
+    private String fechaInicio;
+    private String fechaFin;
 
 }
