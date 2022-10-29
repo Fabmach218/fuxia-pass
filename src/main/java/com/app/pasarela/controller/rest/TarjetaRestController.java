@@ -1,7 +1,11 @@
 package com.app.pasarela.controller.rest;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,7 @@ import com.app.pasarela.model.Tarjeta;
 import com.app.pasarela.model.Token;
 import com.app.pasarela.model.dto.ModelActivarTarjeta;
 import com.app.pasarela.model.dto.ModelBuscarTarjeta;
+import com.app.pasarela.model.dto.ModelMovimientos;
 import com.app.pasarela.model.dto.ModelPagoAbono;
 import com.app.pasarela.model.dto.ModelRespuestaSaldo;
 import com.app.pasarela.model.dto.ModelTarjetaCreate;
@@ -611,6 +616,95 @@ public class TarjetaRestController {
         r.setFechaHora(new Date());
         r.setHttpMethod("POST");
         r.setAction("transferir");
+        r.setStatus(status);
+        _dataRequests.save(r);
+
+        return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.OK);
+
+    }
+
+    @PostMapping(value = "/movimientos", produces = "application/json")
+    public ResponseEntity<Map<String, Object>> movimientos(@RequestHeader(required = true) String apikey, @RequestBody ModelMovimientos form) throws ParseException{
+
+        Token t = validarToken(apikey);
+
+        Map<String, Object> respuesta = new HashMap<>();
+
+        String status = "";
+        String mensaje = "";
+
+        if(t == null){
+
+            status = "error";
+            mensaje = "No está autorizado a utilizar este servicio, revise sus credenciales.";
+
+            respuesta.put("status", status);
+            respuesta.put("mensaje", mensaje);
+            return new ResponseEntity<Map<String,Object>>(respuesta, HttpStatus.FORBIDDEN);
+        }
+
+        String credenciales = form.getNroTarjeta() + "," + form.getDueMonth() + "/" + form.getDueYear() + "," + form.getCvv() + "," + form.getNombre().toUpperCase();
+        String credencialesEncode = Methods.encodeBase64(credenciales);
+        Tarjeta tarjeta = _dataTarjetas.findByCredenciales(credencialesEncode);
+
+        if(existeTarjeta(tarjeta)){
+
+            if(form.getFechaFin().compareTo(form.getFechaInicio()) >= 0){
+                
+                List<Movimiento> listaMovimientos = _dataMovimientos.getMovimientosTarjeta(tarjeta.getId(), form.getFechaInicio() + " 00:00:00", form.getFechaFin() + " 23:59:59");
+
+                Double saldoInicial = _dataMovimientos.getSaldoInicialFecha(tarjeta.getId(), form.getFechaInicio() + " 00:00:00");
+                Double saldoFinal = _dataMovimientos.getSaldoFinalFecha(tarjeta.getId(), form.getFechaFin() + " 23:59:59");
+
+                Movimiento mSaldoFinal = new Movimiento();
+                mSaldoFinal.setDescripcion("Saldo Final");
+                mSaldoFinal.setFechaHora(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(form.getFechaFin() + " 23:59:59"));
+                mSaldoFinal.setMonto(saldoFinal);
+                mSaldoFinal.setTarjeta(tarjeta);
+                mSaldoFinal.setTipo("F");
+
+                Movimiento mSaldoInicial = new Movimiento();
+                mSaldoInicial.setDescripcion("Saldo Inicial");
+                mSaldoInicial.setFechaHora(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(form.getFechaInicio() + " 00:00:00"));
+                mSaldoInicial.setMonto(saldoInicial);
+                mSaldoInicial.setTarjeta(tarjeta);
+                mSaldoInicial.setTipo("I");
+
+                if(listaMovimientos != null){
+                    listaMovimientos.add(0, mSaldoFinal);
+                    listaMovimientos.add(mSaldoInicial);
+                }else{
+                    listaMovimientos = new ArrayList<Movimiento>();
+                    listaMovimientos.add(mSaldoFinal);
+                    listaMovimientos.add(mSaldoInicial);
+                }
+
+                status = "success";
+                mensaje = "Se calcularon los movimientos entre las fechas especificadas!!!";
+
+                respuesta.put("movimientos", listaMovimientos);
+
+            }else{
+                status = "error";
+                mensaje = "La fecha de inicio no puede ser mayor a la de fin!!!";
+            }
+
+        }else{
+
+            status = "error";
+            mensaje = "La tarjeta no existe o está vencida!!!";
+
+        }
+
+        respuesta.put("status", status);
+        respuesta.put("mensaje", mensaje);
+
+        Request r = new Request();
+
+        r.setToken(t);
+        r.setFechaHora(new Date());
+        r.setHttpMethod("POST");
+        r.setAction("movimientos");
         r.setStatus(status);
         _dataRequests.save(r);
 
